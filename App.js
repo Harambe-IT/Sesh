@@ -4,7 +4,10 @@ import {createStackNavigator} from '@react-navigation/stack';
 
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+
 import {LoginManager, AccessToken} from 'react-native-fbsdk';
+import {GoogleSignin} from '@react-native-community/google-signin';
+import {googleClientID} from './src/config/keys';
 
 import {AuthContext} from './src/store/Context';
 import LoginReducer from './src/store/LoginReducer';
@@ -15,6 +18,10 @@ import RegisterScreen from './src/screens/RegisterScreen';
 import HomeScreen from './src/screens/HomeScreen';
 
 const Stack = createStackNavigator();
+
+GoogleSignin.configure({
+  webClientId: googleClientID,
+});
 
 const App = () => {
   const initialLoginState = {
@@ -36,41 +43,89 @@ const App = () => {
           await auth()
             .signInWithEmailAndPassword(email, password)
             .catch((error) => {
-              dispatch({type: 'LOGIN_ERROR', errorMessage: error.message});
+              return dispatch({
+                type: 'LOGIN_ERROR',
+                errorMessage: error.message,
+              });
             });
         } else {
-          dispatch({
+          return dispatch({
             type: 'LOGIN_ERROR',
             errorMessage: 'Please fill in your email and password.',
           });
         }
       },
       signInFacebook: async () => {
-        LoginManager.logInWithPermissions(['public_profile', 'email']).then(
-          async (result) => {
+        LoginManager.logInWithPermissions(['public_profile', 'email'])
+          .then(async (result) => {
             if (result.isCancelled) {
-              dispatch({
+              return dispatch({
                 type: 'LOGIN_ERROR',
                 errorMessage: 'User canceled facebook login process.',
               });
             }
 
-            const data = await AccessToken.getCurrentAccessToken();
+            return AccessToken.getCurrentAccessToken();
+          })
+          .then((data) => {
             if (!data) {
-              dispatch({
+              return dispatch({
                 type: 'LOGIN_ERROR',
                 errorMessage: 'Something went wrong obtaining access token.',
               });
             }
-            const facebookCredential = auth.FacebookAuthProvider.credential(data.accessToken);
+
+            const facebookCredential = auth.FacebookAuthProvider.credential(
+              data.accessToken,
+            );
+
             return auth().signInWithCredential(facebookCredential);
-          },
-        ).catch((err) => {
-          dispatch({
-            type: 'LOGIN_ERROR',
-            errorMessage: err.message,
+          })
+          .then(async (userResult) => {
+            const {user, additionalUserInfo} = userResult;
+
+            if (additionalUserInfo.isNewUser) {
+              await firestore()
+                .collection('users')
+                .doc(user.uid)
+                .set({
+                  firstName: additionalUserInfo.profile.first_name,
+                  lastName: additionalUserInfo.profile.last_name,
+                  email: additionalUserInfo.profile.email,
+                  initials: `${additionalUserInfo.profile.first_name[0]}${additionalUserInfo.profile.last_name[0]}`.toUpperCase(),
+                  createdOn: firestore.FieldValue.serverTimestamp(),
+                });
+            }
+
+            return userResult;
+          })
+          .catch((err) => {
+            return dispatch({
+              type: 'LOGIN_ERROR',
+              errorMessage: err.message,
+            });
           });
-        });
+      },
+      signInGoogle: async () => {
+        GoogleSignin.signIn()
+          .then((result) => {
+            const {idToken} = result;
+            return (googleCredential = auth.GoogleAuthProvider.credential(
+              idToken,
+            ));
+          })
+          .then((googleCredential) => {
+            return auth().signInWithCredential(googleCredential);
+          })
+          .then((userResult) => {
+            console.log(userResult);
+          })
+          .catch((err) => {
+            return dispatch({
+              type: 'LOGIN_ERROR',
+              errorMessage: err.message,
+            });
+          });
       },
       signUp: async (user) => {
         if (
@@ -99,13 +154,13 @@ const App = () => {
               return Promise.all(promise1, promise2);
             })
             .catch((err) => {
-              dispatch({
+              return dispatch({
                 type: 'REGISTER_ERROR',
                 errorMessage: err.message,
               });
             });
         } else {
-          dispatch({
+          return dispatch({
             type: 'REGISTER_ERROR',
             errorMessage: 'Make sure to fill in all the fields.',
           });
@@ -135,7 +190,6 @@ const App = () => {
           <HomeScreen />
         ) : (
           <Stack.Navigator>
-            {console.log(loginState)}
             <Stack.Screen
               name="Login"
               children={(props) => (

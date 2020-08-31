@@ -16,7 +16,7 @@ const LoginScreen = ({navigation, errorMessage}) => {
     password: '',
   });
 
-  const { signIn, signInFacebook } = React.useContext(AuthContext);
+  const {signIn, signInFacebook, signInGoogle} = React.useContext(AuthContext);
 
   const handleLogin = () => {
     signIn(data.email, data.password);
@@ -26,22 +26,22 @@ const LoginScreen = ({navigation, errorMessage}) => {
     signInFacebook();
   };
 
+  const handleGoogleLogin = () => {
+    signInGoogle();
+  };
+
   const handleFieldChange = (value) => {
     setData({
       ...data,
-      ...value
+      ...value,
     });
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.greeting}>
-        {`Social App\nWelcome back!`}
-      </Text>
+      <Text style={styles.greeting}>{`Social App\nWelcome back!`}</Text>
       <View style={styles.errorMessage}>
-        {errorMessage && (
-          <Text style={styles.error}>{errorMessage}</Text>
-        )}
+        {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
       </View>
 
       <View style={styles.form}>
@@ -50,7 +50,8 @@ const LoginScreen = ({navigation, errorMessage}) => {
           <TextInput
             style={styles.input}
             autoCapitalize="none"
-            onChangeText={(email) => handleFieldChange({email})} />
+            onChangeText={(email) => handleFieldChange({email})}
+          />
         </View>
 
         <View style={{marginTop: 32}}>
@@ -59,7 +60,8 @@ const LoginScreen = ({navigation, errorMessage}) => {
             style={styles.input}
             secureTextEntry
             autoCapitalize="none"
-            onChangeText={(password) => handleFieldChange({password})} />
+            onChangeText={(password) => handleFieldChange({password})}
+          />
         </View>
       </View>
 
@@ -67,10 +69,9 @@ const LoginScreen = ({navigation, errorMessage}) => {
         <Text style={{color: '#fff', fontWeight: '500'}}>Sign in</Text>
       </TouchableOpacity>
 
-      <Button
-        title="Facebook Sign-In"
-        onPress={() => handleFacebookLogin()}
-      />
+      <Button title="Facebook Sign-In" onPress={() => handleFacebookLogin()} />
+
+      <Button title="Google Sign-In" onPress={() => handleGoogleLogin()} />
 
       <TouchableOpacity
         style={{alignSelf: 'center', marginTop: 32}}
