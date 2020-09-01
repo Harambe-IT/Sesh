@@ -59,10 +59,7 @@ const App = () => {
         LoginManager.logInWithPermissions(['public_profile', 'email'])
           .then(async (result) => {
             if (result.isCancelled) {
-              return dispatch({
-                type: 'LOGIN_ERROR',
-                errorMessage: 'User canceled facebook login process.',
-              });
+              throw new Error('User cancled the facebook popup');
             }
 
             return AccessToken.getCurrentAccessToken();
@@ -189,7 +186,10 @@ const App = () => {
         {loginState.user !== null ? (
           <HomeScreen />
         ) : (
-          <Stack.Navigator>
+          <Stack.Navigator
+            screenOptions={{
+              headerShown: false,
+            }}>
             <Stack.Screen
               name="Login"
               children={(props) => (
