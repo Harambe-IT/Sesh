@@ -1,5 +1,6 @@
 # Firebase config
 android/app/google-services.json
+src/config/dev.js
 
 # OSX
 #

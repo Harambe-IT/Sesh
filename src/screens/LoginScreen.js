@@ -1,11 +1,11 @@
 import React from 'react';
 import {
+  ScrollView,
   View,
   Text,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Button,
 } from 'react-native';
 
 import {AuthContext} from '../store/Context';
@@ -16,7 +16,7 @@ const LoginScreen = ({navigation, errorMessage}) => {
     password: '',
   });
 
-  const {signIn, signInFacebook} = React.useContext(AuthContext);
+  const {signIn, signInFacebook, signInGoogle} = React.useContext(AuthContext);
 
   const handleLogin = () => {
     signIn(data.email, data.password);
@@ -24,6 +24,10 @@ const LoginScreen = ({navigation, errorMessage}) => {
 
   const handleFacebookLogin = () => {
     signInFacebook();
+  };
+
+  const handleGoogleLogin = () => {
+    signInGoogle();
   };
 
   const handleFieldChange = (value) => {
@@ -34,8 +38,15 @@ const LoginScreen = ({navigation, errorMessage}) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.greeting}>{`Social App\nWelcome back!`}</Text>
+    <ScrollView style={styles.container}>
+      <Text style={styles.greeting}>
+        Sesh <Text style={styles.greetingRed}>everywhere.</Text>
+      </Text>
+
+      <Text style={styles.greeting}>
+        With <Text style={styles.greetingRed}>everyone.</Text>
+      </Text>
+
       <View style={styles.errorMessage}>
         {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
       </View>
@@ -62,21 +73,33 @@ const LoginScreen = ({navigation, errorMessage}) => {
       </View>
 
       <TouchableOpacity style={styles.button} onPress={() => handleLogin()}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Sign in</Text>
+        <Text style={{color: '#fff', fontWeight: '500'}}>Log in</Text>
       </TouchableOpacity>
-
-      <Button title="Facebook Sign-In" onPress={() => handleFacebookLogin()} />
-      <Button title="Google Sign-In" onPress={() => handleFacebookLogin()} />
 
       <TouchableOpacity
-        style={{alignSelf: 'center', marginTop: 32}}
-        onPress={() => navigation.navigate('Register')}>
-        <Text style={{color: '#414959', fontSize: 13}}>
-          New to Social App?{' '}
-          <Text style={{fontWeight: '500', color: '#e9446a'}}>Sign up</Text>
-        </Text>
+        style={styles.button}
+        onPress={() => handleFacebookLogin()}>
+        <Text style={{color: '#fff', fontWeight: '500'}}>Facebook Log In</Text>
       </TouchableOpacity>
-    </View>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => handleGoogleLogin()}>
+        <Text style={{color: '#fff', fontWeight: '500'}}>Google Log In</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Register')}>
+        <Text style={{color: '#fff', fontWeight: '500'}}>Register</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Reset Password')}>
+        <Text style={{color: '#fff', fontWeight: '500'}}>Reset Password</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 };
 
@@ -91,6 +114,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '400',
     textAlign: 'center',
+  },
+  greetingRed: {
+    marginTop: 32,
+    fontSize: 18,
+    fontWeight: '400',
+    textAlign: 'center',
+    color: 'red',
   },
   errorMessage: {
     height: 72,
@@ -122,6 +152,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginHorizontal: 30,
+    marginVertical: 10,
     backgroundColor: '#e9446a',
     borderRadius: 4,
     height: 52,

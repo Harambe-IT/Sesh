@@ -7,14 +7,30 @@ const LoginReducer = (prevState, action) => {
         isLoading: false,
       };
     case 'LOGIN_ERROR':
-      return {
-        ...prevState,
-        loginError: action.errorMessage,
-      };
+      if (action.errorMessage === 'Canceled') {
+        return {...prevState};
+      } else {
+        return {
+          ...prevState,
+          loginError: action.errorMessage,
+        };
+      }
     case 'REGISTER_ERROR':
       return {
         ...prevState,
         registerError: action.errorMessage,
+      };
+    case 'PASSWORD_RESET_ERROR':
+      return {
+        ...prevState,
+        resetPasswordError: action.errorMessage,
+        resetPasswordConfirmation: null,
+      };
+    case 'PASSWORD_RESET_SUCCESSFUL':
+      return {
+        ...prevState,
+        resetPasswordConfirmation: action.confirmation,
+        resetPasswordError: null,
       };
   }
 };

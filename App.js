@@ -4,7 +4,10 @@ import {createStackNavigator} from '@react-navigation/stack';
 
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+
 import {LoginManager, AccessToken} from 'react-native-fbsdk';
+import {GoogleSignin} from '@react-native-community/google-signin';
+import {googleClientID} from './src/config/keys';
 
 import {AuthContext} from './src/store/Context';
 import LoginReducer from './src/store/LoginReducer';
@@ -13,8 +16,13 @@ import LoadingScreen from './src/screens/LoadingScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import HomeScreen from './src/screens/HomeScreen';
+import ResetPasswordScreen from './src/screens/ResetPassword';
 
 const Stack = createStackNavigator();
+
+GoogleSignin.configure({
+  webClientId: googleClientID,
+});
 
 const App = () => {
   const initialLoginState = {
@@ -22,6 +30,8 @@ const App = () => {
     user: null,
     loginError: null,
     registerError: null,
+    resetPasswordError: null,
+    resetPasswordConfirmation: null,
   };
 
   const [loginState, dispatch] = React.useReducer(
@@ -36,62 +46,98 @@ const App = () => {
           await auth()
             .signInWithEmailAndPassword(email, password)
             .catch((error) => {
-              dispatch({type: 'LOGIN_ERROR', errorMessage: error.message});
+              return dispatch({
+                type: 'LOGIN_ERROR',
+                errorMessage: error.message,
+              });
             });
         } else {
-          dispatch({
+          return dispatch({
             type: 'LOGIN_ERROR',
             errorMessage: 'Please fill in your email and password.',
           });
         }
       },
       signInFacebook: async () => {
-        LoginManager.logInWithPermissions(['public_profile', 'email']).then(
-          async (result) => {
+        LoginManager.logInWithPermissions(['public_profile', 'email'])
+          .then(async (result) => {
             if (result.isCancelled) {
-              dispatch({
-                type: 'LOGIN_ERROR',
-                errorMessage: 'User canceled facebook login process.',
-              });
+              throw new Error('Canceled');
             }
 
-            const data = await AccessToken.getCurrentAccessToken();
+            return AccessToken.getCurrentAccessToken();
+          })
+          .then((data) => {
             if (!data) {
-              dispatch({
-                type: 'LOGIN_ERROR',
-                errorMessage: 'Something went wrong obtaining access token.',
-              });
+              throw new Error('Something went wrong obtaining access token.');
             }
-            const facebookCredential = auth.FacebookAuthProvider.credential(data.accessToken);
+
+            const facebookCredential = auth.FacebookAuthProvider.credential(
+              data.accessToken,
+            );
+
             return auth().signInWithCredential(facebookCredential);
-          },
-        ).catch((err) => {
-          dispatch({
-            type: 'LOGIN_ERROR',
-            errorMessage: err.message,
+          })
+          .then(async (userResult) => {
+            const {user, additionalUserInfo} = userResult;
+
+            if (additionalUserInfo.isNewUser) {
+              await firestore()
+                .collection('users')
+                .doc(user.uid)
+                .set({
+                  createdOn: firestore.FieldValue.serverTimestamp(),
+                  initials: `${additionalUserInfo.profile.first_name[0]}${additionalUserInfo.profile.last_name[0]}`.toUpperCase(),
+                });
+            }
+
+            return userResult;
+          })
+          .catch((err) => {
+            return dispatch({
+              type: 'LOGIN_ERROR',
+              errorMessage: err.message,
+            });
           });
-        });
+      },
+      signInGoogle: async () => {
+        GoogleSignin.signIn()
+          .then((result) => {
+            const {idToken} = result;
+            return (googleCredential = auth.GoogleAuthProvider.credential(
+              idToken,
+            ));
+          })
+          .then((googleCredential) => {
+            return auth().signInWithCredential(googleCredential);
+          })
+          .then((userResult) => {
+            console.log(userResult);
+          })
+          .catch((err) => {
+            return dispatch({
+              type: 'LOGIN_ERROR',
+              errorMessage: err.message,
+            });
+          });
       },
       signUp: async (user) => {
         if (
-          user.firstName !== '' &&
-          user.lastName !== '' &&
-          user.email !== '' &&
-          user.password !== ''
+          user.username.trim() !== '' &&
+          user.email.trim() !== '' &&
+          user.password.trim() !== ''
         ) {
           auth()
-            .createUserWithEmailAndPassword(user.email, user.password)
+            .createUserWithEmailAndPassword(user.email.trim(), user.password)
             .then((result) => {
               let promise1 = result.user.updateProfile({
-                displayName: `${user.firstName} ${user.lastName}`,
+                displayName: user.username,
               });
 
               let promise2 = firestore()
                 .collection('users')
                 .doc(result.user.uid)
                 .set({
-                  firstName: user.firstName,
-                  lastName: user.lastName,
                   initials: `${user.firstName[0]}${user.lastName[0]}`.toUpperCase(),
                   createdOn: firestore.FieldValue.serverTimestamp(),
                 });
@@ -99,17 +145,33 @@ const App = () => {
               return Promise.all(promise1, promise2);
             })
             .catch((err) => {
-              dispatch({
+              return dispatch({
                 type: 'REGISTER_ERROR',
                 errorMessage: err.message,
               });
             });
         } else {
-          dispatch({
+          return dispatch({
             type: 'REGISTER_ERROR',
             errorMessage: 'Make sure to fill in all the fields.',
           });
         }
+      },
+      resetPassword: async (email) => {
+        auth()
+          .sendPasswordResetEmail(email)
+          .then(() => {
+            return dispatch({
+              type: 'PASSWORD_RESET_SUCCESSFUL',
+              confirmation: `Email has been sent to ${email}`,
+            });
+          })
+          .catch((err) => {
+            return dispatch({
+              type: 'PASSWORD_RESET_ERROR',
+              errorMessage: err.message,
+            });
+          });
       },
     }),
     [],
@@ -134,8 +196,10 @@ const App = () => {
         {loginState.user !== null ? (
           <HomeScreen />
         ) : (
-          <Stack.Navigator>
-            {console.log(loginState)}
+          <Stack.Navigator
+            screenOptions={{
+              headerShown: false,
+            }}>
             <Stack.Screen
               name="Login"
               children={(props) => (
@@ -148,6 +212,16 @@ const App = () => {
                 <RegisterScreen
                   {...props}
                   errorMessage={loginState.registerError}
+                />
+              )}
+            />
+            <Stack.Screen
+              name="Reset Password"
+              children={(props) => (
+                <ResetPasswordScreen
+                  {...props}
+                  errorMessage={loginState.resetPasswordError}
+                  confirmation={loginState.resetPasswordConfirmation}
                 />
               )}
             />
