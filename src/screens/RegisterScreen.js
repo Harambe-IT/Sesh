@@ -18,12 +18,12 @@ const RegisterScreen = ({navigation, errorMessage}) => {
     password: '',
   });
 
-  const { signUp } = React.useContext(AuthContext);
+  const {signUp} = React.useContext(AuthContext);
 
   const handleFieldChange = (value) => {
     setData({
       ...data,
-      ...value
+      ...value,
     });
   };
 
@@ -35,9 +35,7 @@ const RegisterScreen = ({navigation, errorMessage}) => {
     <ScrollView style={styles.container}>
       <Text style={styles.greeting}>{`Social App\nWelcome back!`}</Text>
       <View style={styles.errorMessage}>
-        {errorMessage && (
-          <Text style={styles.error}>{errorMessage}</Text>
-        )}
+        {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
       </View>
 
       <View style={styles.form}>
@@ -46,7 +44,8 @@ const RegisterScreen = ({navigation, errorMessage}) => {
           <TextInput
             style={styles.input}
             autoCapitalize="none"
-            onChangeText={(firstName) => handleFieldChange({firstName})} />
+            onChangeText={(firstName) => handleFieldChange({firstName})}
+          />
         </View>
 
         <View style={{marginTop: 32}}>
@@ -54,7 +53,8 @@ const RegisterScreen = ({navigation, errorMessage}) => {
           <TextInput
             style={styles.input}
             autoCapitalize="none"
-            onChangeText={(lastName) => handleFieldChange({lastName})} />
+            onChangeText={(lastName) => handleFieldChange({lastName})}
+          />
         </View>
 
         <View style={{marginTop: 32}}>
@@ -62,7 +62,8 @@ const RegisterScreen = ({navigation, errorMessage}) => {
           <TextInput
             style={styles.input}
             autoCapitalize="none"
-            onChangeText={(email) => handleFieldChange({email})} />
+            onChangeText={(email) => handleFieldChange({email})}
+          />
         </View>
 
         <View style={{marginTop: 32}}>
@@ -71,7 +72,8 @@ const RegisterScreen = ({navigation, errorMessage}) => {
             style={styles.input}
             secureTextEntry
             autoCapitalize="none"
-            onChangeText={(password) => handleFieldChange({password})} />
+            onChangeText={(password) => handleFieldChange({password})}
+          />
         </View>
       </View>
 
