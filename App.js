@@ -16,6 +16,7 @@ import LoadingScreen from './src/screens/LoadingScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import HomeScreen from './src/screens/HomeScreen';
+import ResetPasswordScreen from './src/screens/ResetPassword';
 
 const Stack = createStackNavigator();
 
@@ -29,6 +30,8 @@ const App = () => {
     user: null,
     loginError: null,
     registerError: null,
+    resetPasswordError: null,
+    resetPasswordConfirmation: null,
   };
 
   const [loginState, dispatch] = React.useReducer(
@@ -66,10 +69,7 @@ const App = () => {
           })
           .then((data) => {
             if (!data) {
-              return dispatch({
-                type: 'LOGIN_ERROR',
-                errorMessage: 'Something went wrong obtaining access token.',
-              });
+              throw new Error('Something went wrong obtaining access token.');
             }
 
             const facebookCredential = auth.FacebookAuthProvider.credential(
@@ -157,6 +157,22 @@ const App = () => {
           });
         }
       },
+      resetPassword: async (email) => {
+        auth()
+          .sendPasswordResetEmail(email)
+          .then(() => {
+            return dispatch({
+              type: 'PASSWORD_RESET_SUCCESSFUL',
+              confirmation: `Email has been sent to ${email}`,
+            });
+          })
+          .catch((err) => {
+            return dispatch({
+              type: 'PASSWORD_RESET_ERROR',
+              errorMessage: err.message,
+            });
+          });
+      },
     }),
     [],
   );
@@ -196,6 +212,16 @@ const App = () => {
                 <RegisterScreen
                   {...props}
                   errorMessage={loginState.registerError}
+                />
+              )}
+            />
+            <Stack.Screen
+              name="Reset Password"
+              children={(props) => (
+                <ResetPasswordScreen
+                  {...props}
+                  errorMessage={loginState.resetPasswordError}
+                  confirmation={loginState.resetPasswordConfirmation}
                 />
               )}
             />

@@ -10,32 +10,13 @@ import {
 
 import {AuthContext} from '../store/Context';
 
-const RegisterScreen = ({navigation, errorMessage}) => {
-  const [data, setData] = React.useState({
-    username: '',
-    email: '',
-    password: '',
-  });
+const RegisterScreen = ({navigation, errorMessage, confirmation}) => {
+  const [email, setEmail] = React.useState('');
 
-  const {signUp, signInFacebook, signInGoogle} = React.useContext(AuthContext);
+  const {resetPassword} = React.useContext(AuthContext);
 
-  const handleFieldChange = (value) => {
-    setData({
-      ...data,
-      ...value,
-    });
-  };
-
-  const handleFacebookLogin = () => {
-    signInFacebook();
-  };
-
-  const handleGoogleLogin = () => {
-    signInGoogle();
-  };
-
-  const handleRegister = () => {
-    signUp(data);
+  const handleResetPassword = () => {
+    resetPassword(email);
   };
 
   return (
@@ -46,63 +27,31 @@ const RegisterScreen = ({navigation, errorMessage}) => {
       <View style={styles.errorMessage}>
         {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
       </View>
+      <View style={styles.errorMessage}>
+        {confirmation && (
+          <Text style={styles.confirmation}>{confirmation}</Text>
+        )}
+      </View>
 
       <View style={styles.form}>
-        <View>
-          <Text style={styles.inputTitle}>Username</Text>
-          <TextInput
-            style={styles.input}
-            autoCapitalize="none"
-            onChangeText={(username) => handleFieldChange({username})}
-          />
-        </View>
-
         <View style={{marginTop: 32}}>
           <Text style={styles.inputTitle}>Email</Text>
           <TextInput
             style={styles.input}
             autoCapitalize="none"
-            onChangeText={(email) => handleFieldChange({email})}
-          />
-        </View>
-
-        <View style={{marginTop: 32}}>
-          <Text style={styles.inputTitle}>Password</Text>
-          <TextInput
-            style={styles.input}
-            secureTextEntry
-            autoCapitalize="none"
-            onChangeText={(password) => handleFieldChange({password})}
+            onChangeText={(email) => setEmail(email)}
           />
         </View>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Register</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => handleFacebookLogin()}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Facebook Log In</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => handleGoogleLogin()}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Google Log In</Text>
+      <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
+        <Text style={{color: '#fff', fontWeight: '500'}}>Send reset link</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('Login')}>
         <Text style={{color: '#fff', fontWeight: '500'}}>Login</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('Reset Password')}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Reset Password</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -135,6 +84,12 @@ const styles = StyleSheet.create({
   },
   error: {
     color: '#e9446a',
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  confirmation: {
+    color: 'green',
     fontSize: 13,
     fontWeight: '600',
     textAlign: 'center',

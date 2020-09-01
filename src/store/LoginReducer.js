@@ -20,6 +20,18 @@ const LoginReducer = (prevState, action) => {
         ...prevState,
         registerError: action.errorMessage,
       };
+    case 'PASSWORD_RESET_ERROR':
+      return {
+        ...prevState,
+        resetPasswordError: action.errorMessage,
+        resetPasswordConfirmation: null,
+      };
+    case 'PASSWORD_RESET_SUCCESSFUL':
+      return {
+        ...prevState,
+        resetPasswordConfirmation: action.confirmation,
+        resetPasswordError: null,
+      };
   }
 };
 
