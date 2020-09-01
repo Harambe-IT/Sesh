@@ -12,13 +12,12 @@ import {AuthContext} from '../store/Context';
 
 const RegisterScreen = ({navigation, errorMessage}) => {
   const [data, setData] = React.useState({
-    firstName: '',
-    lastName: '',
+    username: '',
     email: '',
     password: '',
   });
 
-  const {signUp} = React.useContext(AuthContext);
+  const {signUp, signInFacebook, signInGoogle} = React.useContext(AuthContext);
 
   const handleFieldChange = (value) => {
     setData({
@@ -27,38 +26,39 @@ const RegisterScreen = ({navigation, errorMessage}) => {
     });
   };
 
-  const handleLogin = () => {
+  const handleFacebookLogin = () => {
+    signInFacebook();
+  };
+
+  const handleGoogleLogin = () => {
+    signInGoogle();
+  };
+
+  const handleRegister = () => {
     signUp(data);
   };
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.greeting}>{`Social App\nWelcome back!`}</Text>
+      <Text style={styles.greeting}>
+        Join the <Text style={styles.greetingRed}>sesh.</Text>
+      </Text>
       <View style={styles.errorMessage}>
         {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
       </View>
 
       <View style={styles.form}>
         <View>
-          <Text style={styles.inputTitle}>First Name</Text>
+          <Text style={styles.inputTitle}>Username</Text>
           <TextInput
             style={styles.input}
             autoCapitalize="none"
-            onChangeText={(firstName) => handleFieldChange({firstName})}
+            onChangeText={(username) => handleFieldChange({username})}
           />
         </View>
 
         <View style={{marginTop: 32}}>
-          <Text style={styles.inputTitle}>Last Name</Text>
-          <TextInput
-            style={styles.input}
-            autoCapitalize="none"
-            onChangeText={(lastName) => handleFieldChange({lastName})}
-          />
-        </View>
-
-        <View style={{marginTop: 32}}>
-          <Text style={styles.inputTitle}>Email Address</Text>
+          <Text style={styles.inputTitle}>Email</Text>
           <TextInput
             style={styles.input}
             autoCapitalize="none"
@@ -77,17 +77,32 @@ const RegisterScreen = ({navigation, errorMessage}) => {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={{color: '#fff', fontWeight: '500'}}>Register</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={{alignSelf: 'center', marginTop: 32, marginBottom: 32}}
+        style={styles.button}
+        onPress={() => handleFacebookLogin()}>
+        <Text style={{color: '#fff', fontWeight: '500'}}>Facebook Log In</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => handleGoogleLogin()}>
+        <Text style={{color: '#fff', fontWeight: '500'}}>Google Log In</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
         onPress={() => navigation.navigate('Login')}>
-        <Text style={{color: '#414959', fontSize: 13}}>
-          Already have an account?{' '}
-          <Text style={{fontWeight: '500', color: '#e9446a'}}>Log in</Text>
-        </Text>
+        <Text style={{color: '#fff', fontWeight: '500'}}>Login</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => console.log('Reset password: Not Implemented yet')}>
+        <Text style={{color: '#fff', fontWeight: '500'}}>Reset Password</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -104,6 +119,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '400',
     textAlign: 'center',
+  },
+  greetingRed: {
+    marginTop: 32,
+    fontSize: 18,
+    fontWeight: '400',
+    textAlign: 'center',
+    color: 'red',
   },
   errorMessage: {
     height: 72,
@@ -140,5 +162,6 @@ const styles = StyleSheet.create({
     height: 52,
     alignItems: 'center',
     justifyContent: 'center',
+    marginVertical: 10,
   },
 });

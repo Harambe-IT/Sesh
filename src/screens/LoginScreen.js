@@ -96,7 +96,7 @@ const LoginScreen = ({navigation, errorMessage}) => {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('Register')}>
+        onPress={() => console.log('Reset password: Not Implemented yet')}>
         <Text style={{color: '#fff', fontWeight: '500'}}>Reset Password</Text>
       </TouchableOpacity>
     </ScrollView>

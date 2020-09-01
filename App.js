@@ -59,7 +59,7 @@ const App = () => {
         LoginManager.logInWithPermissions(['public_profile', 'email'])
           .then(async (result) => {
             if (result.isCancelled) {
-              throw new Error('User cancled the facebook popup');
+              throw new Error('Canceled');
             }
 
             return AccessToken.getCurrentAccessToken();
@@ -86,11 +86,8 @@ const App = () => {
                 .collection('users')
                 .doc(user.uid)
                 .set({
-                  firstName: additionalUserInfo.profile.first_name,
-                  lastName: additionalUserInfo.profile.last_name,
-                  email: additionalUserInfo.profile.email,
-                  initials: `${additionalUserInfo.profile.first_name[0]}${additionalUserInfo.profile.last_name[0]}`.toUpperCase(),
                   createdOn: firestore.FieldValue.serverTimestamp(),
+                  initials: `${additionalUserInfo.profile.first_name[0]}${additionalUserInfo.profile.last_name[0]}`.toUpperCase(),
                 });
             }
 
@@ -126,24 +123,21 @@ const App = () => {
       },
       signUp: async (user) => {
         if (
-          user.firstName !== '' &&
-          user.lastName !== '' &&
-          user.email !== '' &&
-          user.password !== ''
+          user.username.trim() !== '' &&
+          user.email.trim() !== '' &&
+          user.password.trim() !== ''
         ) {
           auth()
-            .createUserWithEmailAndPassword(user.email, user.password)
+            .createUserWithEmailAndPassword(user.email.trim(), user.password)
             .then((result) => {
               let promise1 = result.user.updateProfile({
-                displayName: `${user.firstName} ${user.lastName}`,
+                displayName: user.username,
               });
 
               let promise2 = firestore()
                 .collection('users')
                 .doc(result.user.uid)
                 .set({
-                  firstName: user.firstName,
-                  lastName: user.lastName,
                   initials: `${user.firstName[0]}${user.lastName[0]}`.toUpperCase(),
                   createdOn: firestore.FieldValue.serverTimestamp(),
                 });

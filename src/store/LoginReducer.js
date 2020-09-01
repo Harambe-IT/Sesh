@@ -7,10 +7,14 @@ const LoginReducer = (prevState, action) => {
         isLoading: false,
       };
     case 'LOGIN_ERROR':
-      return {
-        ...prevState,
-        loginError: action.errorMessage,
-      };
+      if (action.errorMessage === 'Canceled') {
+        return {...prevState};
+      } else {
+        return {
+          ...prevState,
+          loginError: action.errorMessage,
+        };
+      }
     case 'REGISTER_ERROR':
       return {
         ...prevState,
