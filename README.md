@@ -15,9 +15,8 @@ Once downloaded, place the file in the correct folder: `../Sesh/android/app/goog
 
 Add a dev.js file in `../Sesh/src/config/` directory.  
 This file should contain your google access keys, the file will look like this:  
+(keys found at [Authentication methods](https://console.firebase.google.com/u/2/project/social-app-24a9a/authentication/providers) by opening the Google Signin tab)
 ```js
-# (found at [Authentication methods](https://console.firebase.google.com/u/2/project/social-app-24a9a/authentication/providers) by opening the Google Signin tab)
-
 export const googleClientID = 'YOUR_GOOGLECLIENTID_HERE';
 export const googleClientSecret = 'YOUR_GOOGLECLIENTSECRET_HERE';
 ```
