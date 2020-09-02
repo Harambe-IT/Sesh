@@ -3,7 +3,7 @@
 ### Node environment
 Make sure you have NodeJS installed.([NodeJS Website](https://nodejs.org/en/))  
 
-After that, navigate with a terminal to the main folder (../Sesh).  
+After that, navigate with a terminal to the main folder: `../Sesh`.  
 Install all the required dependencies with `npm install`.  
 
 ### Firebase environment
@@ -11,7 +11,7 @@ Make sure you have access to the cloud console of the project. ([Firebase Projec
 
 Navigate to the settings of the android project and download the google-services.json file. ([Android Firebase Settings](https://console.firebase.google.com/u/2/project/social-app-24a9a/settings/general/android:com.socialapp)) 
 
-Once downloaded, place the file in the correct folder. (../Sesh/android/app/google-services.json)  
+Once downloaded, place the file in the correct folder: `../Sesh/android/app/google-services.json`. 
 
 Add a dev.js file in `../Sesh/src/config/` directory.  
 This file should contain your google access keys, the file will look like this:  
