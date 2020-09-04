@@ -12,11 +12,11 @@ import {googleClientID} from './src/config/keys';
 import {AuthContext} from './src/store/Context';
 import LoginReducer from './src/store/LoginReducer';
 
-import LoadingScreen from './src/screens/CommonScreens/LoadingScreen';
-import LoginScreen from './src/screens/AuthenticationScreens/LoginScreen';
-import RegisterScreen from './src/screens/AuthenticationScreens/RegisterScreen';
-import ExploreScreen from './src/screens/ExploreScreens/ExploreScreen';
-import ResetPasswordScreen from './src/screens/AuthenticationScreens/ResetPassword';
+import LoadingScreen from './src/screens/Common/LoadingScreen';
+import LoginScreen from './src/screens/Authentication/LoginScreen';
+import RegisterScreen from './src/screens/Authentication/RegisterScreen';
+import TabScreens from './src/components/Common/MainNavigationTabs';
+import ResetPasswordScreen from './src/screens/Authentication/ResetPassword';
 
 const Stack = createStackNavigator();
 
@@ -194,7 +194,7 @@ const App = () => {
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>
         {loginState.user !== null ? (
-          <ExploreScreen />
+          <TabScreens />
         ) : (
           <Stack.Navigator
             screenOptions={{
