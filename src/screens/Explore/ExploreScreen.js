@@ -3,10 +3,10 @@ import {View, Button, Text} from 'react-native';
 
 import auth from '@react-native-firebase/auth';
 
-const HomeScreen = () => {
+const ExploreScreen = () => {
   return (
     <View>
-      <Text>Welcome!</Text>
+      <Text>Explore Screen</Text>
       <Button
         onPress={() => {
           auth().signOut();
@@ -19,4 +19,4 @@ const HomeScreen = () => {
   );
 };
 
-export default HomeScreen;
+export default ExploreScreen;

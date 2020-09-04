@@ -1,25 +1,29 @@
 import React from 'react';
 import {
-  ScrollView,
   View,
+  ScrollView,
   Text,
   StyleSheet,
   TextInput,
   TouchableOpacity,
 } from 'react-native';
 
-import {AuthContext} from '../store/Context';
+import {AuthContext} from '../../store/Context';
 
-const LoginScreen = ({navigation, errorMessage}) => {
+const RegisterScreen = ({navigation, errorMessage}) => {
   const [data, setData] = React.useState({
+    username: '',
     email: '',
     password: '',
   });
 
-  const {signIn, signInFacebook, signInGoogle} = React.useContext(AuthContext);
+  const {signUp, signInFacebook, signInGoogle} = React.useContext(AuthContext);
 
-  const handleLogin = () => {
-    signIn(data.email, data.password);
+  const handleFieldChange = (value) => {
+    setData({
+      ...data,
+      ...value,
+    });
   };
 
   const handleFacebookLogin = () => {
@@ -30,30 +34,31 @@ const LoginScreen = ({navigation, errorMessage}) => {
     signInGoogle();
   };
 
-  const handleFieldChange = (value) => {
-    setData({
-      ...data,
-      ...value,
-    });
+  const handleRegister = () => {
+    signUp(data);
   };
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.greeting}>
-        Sesh <Text style={styles.greetingRed}>everywhere.</Text>
+        Join the <Text style={styles.greetingRed}>sesh.</Text>
       </Text>
-
-      <Text style={styles.greeting}>
-        With <Text style={styles.greetingRed}>everyone.</Text>
-      </Text>
-
       <View style={styles.errorMessage}>
         {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
       </View>
 
       <View style={styles.form}>
         <View>
-          <Text style={styles.inputTitle}>Email Address</Text>
+          <Text style={styles.inputTitle}>Username</Text>
+          <TextInput
+            style={styles.input}
+            autoCapitalize="none"
+            onChangeText={(username) => handleFieldChange({username})}
+          />
+        </View>
+
+        <View style={{marginTop: 32}}>
+          <Text style={styles.inputTitle}>Email</Text>
           <TextInput
             style={styles.input}
             autoCapitalize="none"
@@ -72,8 +77,8 @@ const LoginScreen = ({navigation, errorMessage}) => {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={() => handleLogin()}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Log in</Text>
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
+        <Text style={{color: '#fff', fontWeight: '500'}}>Register</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -90,8 +95,8 @@ const LoginScreen = ({navigation, errorMessage}) => {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('Register')}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Register</Text>
+        onPress={() => navigation.navigate('Login')}>
+        <Text style={{color: '#fff', fontWeight: '500'}}>Login</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -103,7 +108,7 @@ const LoginScreen = ({navigation, errorMessage}) => {
   );
 };
 
-export default LoginScreen;
+export default RegisterScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -152,11 +157,11 @@ const styles = StyleSheet.create({
   },
   button: {
     marginHorizontal: 30,
-    marginVertical: 10,
     backgroundColor: '#e9446a',
     borderRadius: 4,
     height: 52,
     alignItems: 'center',
     justifyContent: 'center',
+    marginVertical: 10,
   },
 });
