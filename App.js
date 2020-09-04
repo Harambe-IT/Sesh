@@ -15,7 +15,7 @@ import LoginReducer from './src/store/LoginReducer';
 import LoadingScreen from './src/screens/Common/LoadingScreen';
 import LoginScreen from './src/screens/Authentication/LoginScreen';
 import RegisterScreen from './src/screens/Authentication/RegisterScreen';
-import TabScreens from './src/components/Common/MainNavigationTabs';
+import AuthenticatedNavigation from './src/components/Common/MainNavigation';
 import ResetPasswordScreen from './src/screens/Authentication/ResetPassword';
 
 const Stack = createStackNavigator();
@@ -194,7 +194,7 @@ const App = () => {
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>
         {loginState.user !== null ? (
-          <TabScreens />
+          <AuthenticatedNavigation />
         ) : (
           <Stack.Navigator
             screenOptions={{
