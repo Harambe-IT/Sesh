@@ -1,7 +1,7 @@
 import React from 'react';
 import {Text, View, Image, StyleSheet} from 'react-native';
 
-const Post = ({post}) => {
+const Sesh = ({post}) => {
   const {Owner, Content, Likes, Reactions} = post;
   return (
     <View>
@@ -24,7 +24,7 @@ const Post = ({post}) => {
   );
 };
 
-export default Post;
+export default Sesh;
 
 const styles = StyleSheet.create({
   container: {

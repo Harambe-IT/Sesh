@@ -3,7 +3,7 @@ import {ScrollView, View, Button, Text} from 'react-native';
 
 import auth from '@react-native-firebase/auth';
 
-import Post from '../../components/Explore/Post';
+import {Picture, Spot, Video, Sesh} from '../../components/Explore';
 
 const ExploreScreen = () => {
   // Get the posts from the database, placeholder for now
@@ -14,7 +14,7 @@ const ExploreScreen = () => {
         Name: 'Test Name 1',
         ProfilePictureURL: {uri: 'https://via.placeholder.com/300.png'},
       },
-      Likes: [{Owner: 'TestLikeOwner', Like: true}],
+      Likes: [{Owner: 'TestLikeOwner'}],
       Reactions: [{Owner: 'TestReactionOwner', Content: 'Nice spot'}],
       Content: {
         Type: 'Picture',
@@ -27,11 +27,11 @@ const ExploreScreen = () => {
         Name: 'Test Name 1',
         ProfilePictureURL: {uri: 'https://via.placeholder.com/300.png'},
       },
-      Likes: [{Owner: 'TestLikeOwner', Like: true}],
+      Likes: [{Owner: 'TestLikeOwner'}],
       Reactions: [{Owner: 'TestReactionOwner', Content: 'Nice spot'}],
       Content: {
-        Type: 'Picture',
-        ContentURL: {uri: 'https://picsum.photos/200/300'},
+        Type: 'Video',
+        ContentURL: {uri: 'https://www.youtube.com/embed/4HTx-EC9LOc'},
       },
     },
     {
@@ -40,7 +40,7 @@ const ExploreScreen = () => {
         Name: 'Test Name 1',
         ProfilePictureURL: {uri: 'https://via.placeholder.com/300.png'},
       },
-      Likes: [{Owner: 'TestLikeOwner', Like: true}],
+      Likes: [{Owner: 'TestLikeOwner'}],
       Reactions: [{Owner: 'TestReactionOwner', Content: 'Nice spot'}],
       Content: {
         Type: 'Picture',
@@ -53,7 +53,7 @@ const ExploreScreen = () => {
         Name: 'Test Name 1',
         ProfilePictureURL: {uri: 'https://via.placeholder.com/300.png'},
       },
-      Likes: [{Owner: 'TestLikeOwner', Like: true}],
+      Likes: [{Owner: 'TestLikeOwner'}],
       Reactions: [{Owner: 'TestReactionOwner', Content: 'Nice spot'}],
       Content: {
         Type: 'Picture',
@@ -63,7 +63,14 @@ const ExploreScreen = () => {
   ];
 
   const postList = posts.map((post) => {
-    return <Post key={post.id} post={post} />;
+    switch (post.Content.Type) {
+      case 'Picture':
+        return <Picture key={post.id} post={post} />;
+      case 'Video':
+        return <Video key={post.id} post={post} />;
+      default:
+        return <Picture key={post.id} post={post} />;
+    }
   });
 
   return (
