@@ -128,6 +128,32 @@ export const resetPassword = createAsyncThunk(
   },
 );
 
+export const authChanged = createAsyncThunk(
+  'auth/authChanged',
+  async (user, {rejectWithValue}) => {
+    return firestore()
+      .collection('users')
+      .doc(user.uid)
+      .get()
+      .then((doc) => {
+        if (!doc.exists)
+          throw new error(
+            `User with id '${user.uid}' didn't exist in the firestore.`,
+          );
+        return {
+          firstName: doc.data().firstName,
+          lastName: doc.data().lastName,
+          initials: doc.data().initials,
+          createdOn: doc.data().seconds,
+          username: user.displayName,
+        };
+      })
+      .catch((err) => {
+        return rejectWithValue(err.message);
+      });
+  },
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
@@ -138,15 +164,7 @@ const authSlice = createSlice({
     resetPasswordErrors: null,
     resetPasswordConfirmation: null,
   },
-  reducers: {
-    authChanged: (state, action) => {
-      state.user = action.payload;
-      state.isFetching = false;
-      state.signupErrors = null;
-      state.loginErrors = null;
-      resetPasswordErrors = null;
-    },
-  },
+  reducers: {},
   extraReducers: {
     [signIn.pending]: (state, action) => {
       state.isFetching = true;
@@ -167,8 +185,22 @@ const authSlice = createSlice({
         state.loginErrors = 'Email and/or password were incorrect.';
       else state.loginErrors = action.payload;
     },
+    [authChanged.pending]: (state, action) => {
+      state.isFetching = true;
+      state.user = null;
+      state.loginErrors = null;
+      state.signUpErrors = null;
+      state.resetPasswordErrors = null;
+      state.resetPasswordConfirmation = null;
+    },
+    [authChanged.fulfilled]: (state, action) => {
+      state.isFetching = false;
+      state.user = action.payload;
+    },
+    [authChanged.rejected]: (state, action) => {
+      state.isFetching = false;
+    },
   },
 });
 
-export const {authChanged} = authSlice.actions;
 export default authSlice.reducer;

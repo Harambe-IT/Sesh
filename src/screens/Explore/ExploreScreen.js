@@ -31,7 +31,10 @@ const ExploreScreen = () => {
       Reactions: [{Owner: 'TestReactionOwner', Content: 'Nice spot'}],
       Content: {
         Type: 'Video',
-        ContentURL: {uri: 'https://www.youtube.com/embed/4HTx-EC9LOc'},
+        ContentURL: {
+          uri:
+            'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        },
       },
     },
     {
