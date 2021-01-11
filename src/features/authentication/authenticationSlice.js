@@ -154,7 +154,18 @@ const authSlice = createSlice({
     [signIn.rejected]: (state, action) => {
       state.isFetching = false;
       state.user = null;
-      state.loginErrors = action.payload;
+
+      if (action.payload.includes('auth/invalid-email'))
+        state.loginErrors =
+          'The email address is not valid.\nProvide a valid email address when trying to login.';
+      else if (action.payload.includes('auth/user-disabled'))
+        state.loginErrors =
+          "The account you're trying to login to is disabled.\nContact support for more information.";
+      else if (action.payload.includes('auth/user-not-found'))
+        state.loginErrors = 'Email and/or password were incorrect.';
+      else if (action.payload.includes('auth/wrong-password'))
+        state.loginErrors = 'Email and/or password were incorrect.';
+      else state.loginErrors = action.payload;
     },
   },
 });
