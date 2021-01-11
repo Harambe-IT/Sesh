@@ -25,5 +25,5 @@ If you still have issues with the firebase configuration, follow the steps on th
 Normally these steps should already be completed, but you can try this if nothing else works.  
 
 ### Running the project
-Navigate in a terminal to `../Sesh` and execute `npx react-antive run-android`. This will build all the files and link the librairies.  
+Navigate in a terminal to `../Sesh` and execute `npx react-native run-android`. This will build all the files and link the libraries.
 The first time, this will take a while. After first build, consequent builds get faster.  

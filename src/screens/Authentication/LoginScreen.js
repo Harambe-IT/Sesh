@@ -10,44 +10,37 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
+
+import {useSelector, useDispatch} from 'react-redux';
+import {
+  signIn,
+  signInFacebook,
+  signInGoogle,
+} from '../../features/authentication/authenticationSlice';
+
 import PasswordTextBox from '../../components/Design/PasswordTextBox';
 import EmailTextBox from '../../components/Design/EmailTextBox';
 import CupertinoButtonDanger from '../../components/Design/CupertinoButtonDanger';
 
-import {AuthContext} from '../../store/Context';
-
-const LoginScreen = ({navigation, errorMessage}) => {
-  const [data, setData] = React.useState({
-    email: '',
-    password: '',
-  });
-
-  const [user, setUser] = React.useState(null);
-  const [wachtwoord, setWachtwoord] = React.useState(null);
-
-  const {signIn, signInFacebook, signInGoogle} = React.useContext(AuthContext);
+const LoginScreen = ({navigation}) => {
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const {loginErrors} = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
 
   const handleLogin = () => {
-    console.log(`signing in with user: ${user} password: ${wachtwoord}`);
-    signIn(user, wachtwoord);
+    dispatch(signIn({email, password}));
   };
 
   const handleFacebookLogin = () => {
-    signInFacebook();
+    dispatch(signInFacebook());
   };
 
   const handleGoogleLogin = () => {
-    signInGoogle();
+    dispatch(signInGoogle());
   };
 
-  const handleFieldChange = (value) => {
-    setData({
-      ...data,
-      ...value,
-    });
-  };
-
-  const layout = (
+  return (
     <ScrollView style={styles.container}>
       <ImageBackground
         source={require('../../assets/images/image_InBb.png')}
@@ -67,19 +60,13 @@ const LoginScreen = ({navigation, errorMessage}) => {
           <View>
             <EmailTextBox
               style={styles.EmailTextBox}
-              onChangeText={(email) => {
-                setUser(email);
-              }}></EmailTextBox>
+              onChangeText={setEmail}></EmailTextBox>
           </View>
 
           <View style={{marginTop: 32}}>
             <PasswordTextBox
               style={styles.PasswordTextBox}
-              onChangeText={(wachtwoord) => {
-                console.log(height);
-                console.log(width);
-                setWachtwoord(wachtwoord);
-              }}></PasswordTextBox>
+              onChangeText={setPassword}></PasswordTextBox>
           </View>
         </View>
 
@@ -108,54 +95,14 @@ const LoginScreen = ({navigation, errorMessage}) => {
               style={styles.image4}></Image>
           </TouchableOpacity>
         </View>
-        <View style={styles.errorMessage}>
-          {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
-        </View>
+        {loginErrors && (
+          <View style={styles.errorMessage}>
+            <Text style={styles.error}>{loginErrors}</Text>
+          </View>
+        )}
       </ImageBackground>
     </ScrollView>
   );
-
-  var layout2 = (
-    <ScrollView style={styles.container}>
-      <Text style={styles.greeting}>
-        Sesh <Text style={styles.greetingRed}>everywhere.</Text>
-      </Text>
-
-      <Text style={styles.greeting}>
-        With <Text style={styles.greetingRed}>everyone.</Text>
-      </Text>
-
-      <TouchableOpacity style={styles.button} onPress={() => handleLogin()}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Log in</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => handleFacebookLogin()}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Facebook Log In</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => handleGoogleLogin()}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Google Log In</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('Register')}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Register</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('Reset Password')}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Reset Password</Text>
-      </TouchableOpacity>
-    </ScrollView>
-  );
-
-  return layout;
 };
 
 export default LoginScreen;

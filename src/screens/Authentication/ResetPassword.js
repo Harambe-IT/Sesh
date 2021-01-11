@@ -8,15 +8,18 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-import {AuthContext} from '../../store/Context';
+import {useSelector, useDispatch} from 'react-redux';
+import {resetPassword} from '../../features/authentication/authenticationSlice';
 
-const RegisterScreen = ({navigation, errorMessage, confirmation}) => {
+const RegisterScreen = ({navigation}) => {
   const [email, setEmail] = React.useState('');
-
-  const {resetPassword} = React.useContext(AuthContext);
+  const dispatch = useDispatch();
+  const {resetPasswordErrors, resetPasswordConfirmation} = useSelector(
+    (state) => state.auth,
+  );
 
   const handleResetPassword = () => {
-    resetPassword(email);
+    dispatch(resetPassword(email));
   };
 
   return (
@@ -24,14 +27,16 @@ const RegisterScreen = ({navigation, errorMessage, confirmation}) => {
       <Text style={styles.greeting}>
         Join the <Text style={styles.greetingRed}>sesh.</Text>
       </Text>
-      <View style={styles.errorMessage}>
-        {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
-      </View>
-      <View style={styles.errorMessage}>
-        {confirmation && (
-          <Text style={styles.confirmation}>{confirmation}</Text>
-        )}
-      </View>
+      {resetPasswordErrors && (
+        <View style={styles.errorMessage}>
+          (<Text style={styles.error}>{resetPasswordErrors}</Text>)
+        </View>
+      )}
+      {resetPasswordConfirmation && (
+        <View style={styles.errorMessage}>
+          (<Text style={styles.confirmation}>{resetPasswordConfirmation}</Text>)
+        </View>
+      )}
 
       <View style={styles.form}>
         <View style={{marginTop: 32}}>
@@ -39,7 +44,7 @@ const RegisterScreen = ({navigation, errorMessage, confirmation}) => {
           <TextInput
             style={styles.input}
             autoCapitalize="none"
-            onChangeText={(email) => setEmail(email)}
+            onChangeText={setEmail}
           />
         </View>
       </View>

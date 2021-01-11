@@ -8,34 +8,30 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-import {AuthContext} from '../../store/Context';
+import {useSelector, useDispatch} from 'react-redux';
+import {
+  signUp,
+  signInFacebook,
+  signInGoogle,
+} from '../../features/authentication/authenticationSlice';
 
-const RegisterScreen = ({navigation, errorMessage}) => {
-  const [data, setData] = React.useState({
-    username: '',
-    email: '',
-    password: '',
-  });
-
-  const {signUp, signInFacebook, signInGoogle} = React.useContext(AuthContext);
-
-  const handleFieldChange = (value) => {
-    setData({
-      ...data,
-      ...value,
-    });
-  };
+const RegisterScreen = ({navigation}) => {
+  const [username, setUsername] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const dispatch = useDispatch();
+  const {signUpErrors} = useSelector((state) => state.auth);
 
   const handleFacebookLogin = () => {
-    signInFacebook();
+    dispatch(signInFacebook());
   };
 
   const handleGoogleLogin = () => {
-    signInGoogle();
+    dispatch(signInGoogle());
   };
 
   const handleRegister = () => {
-    signUp(data);
+    dispatch(signUp({email, password, username}));
   };
 
   return (
@@ -43,9 +39,11 @@ const RegisterScreen = ({navigation, errorMessage}) => {
       <Text style={styles.greeting}>
         Join the <Text style={styles.greetingRed}>sesh.</Text>
       </Text>
-      <View style={styles.errorMessage}>
-        {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
-      </View>
+      {signUpErrors && (
+        <View style={styles.errorMessage}>
+          <Text style={styles.error}>{signUpErrors}</Text>
+        </View>
+      )}
 
       <View style={styles.form}>
         <View>
@@ -53,7 +51,7 @@ const RegisterScreen = ({navigation, errorMessage}) => {
           <TextInput
             style={styles.input}
             autoCapitalize="none"
-            onChangeText={(username) => handleFieldChange({username})}
+            onChangeText={setUsername}
           />
         </View>
 
@@ -62,7 +60,7 @@ const RegisterScreen = ({navigation, errorMessage}) => {
           <TextInput
             style={styles.input}
             autoCapitalize="none"
-            onChangeText={(email) => handleFieldChange({email})}
+            onChangeText={setEmail}
           />
         </View>
 
@@ -72,7 +70,7 @@ const RegisterScreen = ({navigation, errorMessage}) => {
             style={styles.input}
             secureTextEntry
             autoCapitalize="none"
-            onChangeText={(password) => handleFieldChange({password})}
+            onChangeText={setPassword}
           />
         </View>
       </View>
@@ -81,15 +79,11 @@ const RegisterScreen = ({navigation, errorMessage}) => {
         <Text style={{color: '#fff', fontWeight: '500'}}>Register</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => handleFacebookLogin()}>
+      <TouchableOpacity style={styles.button} onPress={handleFacebookLogin}>
         <Text style={{color: '#fff', fontWeight: '500'}}>Facebook Log In</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => handleGoogleLogin()}>
+      <TouchableOpacity style={styles.button} onPress={handleGoogleLogin}>
         <Text style={{color: '#fff', fontWeight: '500'}}>Google Log In</Text>
       </TouchableOpacity>
 
