@@ -23,8 +23,7 @@ const VideoPost = ({post}) => {
         ref={(ref) => {
           Player = ref;
         }}
-        repeat={false}
-        paused={true}
+        controls={true}
         onError={console.error}
       />
 
