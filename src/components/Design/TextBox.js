@@ -1,14 +1,14 @@
-import React, {Component} from 'react';
+import React from 'react';
 import {StyleSheet, View, TextInput} from 'react-native';
 
-function EmailTextBox(props) {
+function TextBox({style, placeholder, onChangeText}) {
   return (
-    <View style={[styles.container, props.style]}>
+    <View style={[styles.container, style]}>
       <TextInput
-        placeholder="Username"
+        placeholder={placeholder}
         style={styles.inputStyle}
         placeholderTextColor="#FFFFFF"
-        onChangeText={props.onChangeText}></TextInput>
+        onChangeText={onChangeText}></TextInput>
     </View>
   );
 }
@@ -35,4 +35,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EmailTextBox;
+export default TextBox;

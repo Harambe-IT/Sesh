@@ -4,7 +4,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   ImageBackground,
   Image,
@@ -19,7 +18,7 @@ import {
 } from '../../features/authentication/authenticationSlice';
 
 import PasswordTextBox from '../../components/Design/PasswordTextBox';
-import EmailTextBox from '../../components/Design/EmailTextBox';
+import TextBox from '../../components/Design/TextBox';
 import CupertinoButtonDanger from '../../components/Design/CupertinoButtonDanger';
 
 const LoginScreen = ({navigation}) => {
@@ -58,9 +57,10 @@ const LoginScreen = ({navigation}) => {
 
         <View style={styles.form}>
           <View>
-            <EmailTextBox
+            <TextBox
               style={styles.EmailTextBox}
-              onChangeText={setEmail}></EmailTextBox>
+              onChangeText={setEmail}
+              placeholder="Username"></TextBox>
           </View>
 
           <View style={{marginTop: 32}}>
@@ -180,61 +180,5 @@ const styles = StyleSheet.create({
     marginTop: 55,
     marginLeft: 214,
     marginRight: 213,
-  },
-});
-
-const styles2 = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  greeting: {
-    marginTop: 32,
-    fontSize: 18,
-    fontWeight: '400',
-    textAlign: 'center',
-  },
-  greetingRed: {
-    marginTop: 32,
-    fontSize: 18,
-    fontWeight: '400',
-    textAlign: 'center',
-    color: 'red',
-  },
-  errorMessage: {
-    height: 72,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 30,
-  },
-  error: {
-    color: '#e9446a',
-    fontSize: 13,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  form: {
-    marginBottom: 48,
-    marginHorizontal: 39,
-  },
-  inputTitle: {
-    color: '#8a8f9e',
-    fontSize: 10,
-    textTransform: 'uppercase',
-  },
-  input: {
-    borderBottomColor: '#8a8f9e',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    height: 40,
-    fontSize: 15,
-    color: '#151f3d',
-  },
-  button: {
-    marginHorizontal: 30,
-    marginVertical: 10,
-    backgroundColor: '#e9446a',
-    borderRadius: 4,
-    height: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });
