@@ -1,17 +1,25 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
+import storage from '@react-native-firebase/storage';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import {LoginManager, AccessToken} from 'react-native-fbsdk';
-import {GoogleSignin} from '@react-native-community/google-signin';
-import {googleClientID} from '../../config/keys';
 
 export const createNewPost = createAsyncThunk(
   'posts/create',
   async (post, {rejectWithValue}) => {
-    return auth()
-      .signInWithEmailAndPassword(creds.email, creds.password)
-      .then((response) => {
-        return response.data;
+    let uid = auth().currentUser.uid || null;
+    if (!uid) return rejectWithValue("User wasn't authenticated");
+
+    let reference = storage().ref(`/${uid}/${post.name}`);
+    let task = reference.putFile(post.uri);
+    task.on('state_changed', (taskSnapshot) => {
+      console.log(
+        `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
+      );
+    });
+
+    return task
+      .then(() => {
+        return true;
       })
       .catch((error) => {
         return rejectWithValue(error.message);
@@ -22,11 +30,22 @@ export const createNewPost = createAsyncThunk(
 const postSlice = createSlice({
   name: 'posts',
   initialState: {
-    isFetching: false,
+    isUploading: false,
     errors: null,
   },
   reducers: {},
-  extraReducers: {},
+  extraReducers: {
+    [createNewPost.pending]: (state, action) => {
+      state.isUploading = true;
+    },
+    [createNewPost.rejected]: (state, action) => {
+      state.isUploading = false;
+      state.errors = action.payload;
+    },
+    [createNewPost.fulfilled]: (state, action) => {
+      state.isUploading = false;
+    },
+  },
 });
 
 export default postSlice.reducer;

@@ -13,10 +13,16 @@ import auth from '@react-native-firebase/auth';
 
 import TextBox from '../../components/Design/TextBox';
 
+import {useDispatch, useSelector} from 'react-redux';
+import {createNewPost} from '../../features/posts/postSlice';
+
 const CreateContentScreen = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [photo, setPhoto] = useState(null);
+
+  const dispatch = useDispatch();
+  const {isUploading, errors} = useSelector((state) => state.posts);
 
   const handleChooseImageCallback = (response) => {
     if (response.didCancel) {
@@ -33,6 +39,14 @@ const CreateContentScreen = () => {
         name,
       };
       setPhoto(source);
+    }
+  };
+
+  const handleUpload = () => {
+    if (photo && photo.uri && photo.name && photo.type) {
+      dispatch(createNewPost(photo));
+    } else {
+      console.log('Provide a picture or video before trying to upload.');
     }
   };
 
@@ -58,7 +72,10 @@ const CreateContentScreen = () => {
         onPress={() =>
           launchImageLibrary({mediaType: 'photo'}, handleChooseImageCallback)
         }>
-        <Text>Upload Image</Text>
+        <Text>Choose Image</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={handleUpload}>
+        <Text>Post</Text>
       </TouchableOpacity>
       <Button
         onPress={() => {
