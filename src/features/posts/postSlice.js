@@ -7,23 +7,56 @@ export const createNewPost = createAsyncThunk(
   'posts/create',
   async (post, {rejectWithValue}) => {
     let uid = auth().currentUser.uid || null;
-    if (!uid) return rejectWithValue("User wasn't authenticated");
+    if (!uid) return rejectWithValue({generic: "User wasn't authenticated"});
+    if (!post.fileSource)
+      return rejectWithValue({
+        fileSource:
+          'Provide a picture or video before trying to post anything.',
+      });
+    if (!post.description)
+      return rejectWithValue({description: 'Provide a description, please.'});
+    if (!post.title)
+      return rejectWithValue({description: 'Provide a title, please.'});
 
-    let reference = storage().ref(`/${uid}/${post.name}`);
-    let task = reference.putFile(post.uri);
-    task.on('state_changed', (taskSnapshot) => {
-      console.log(
-        `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
-      );
+    let postFileReference = storage().ref(`/${uid}/${post.fileSource.name}`);
+    let uploadTask = postFileReference.putFile(post.fileSource.uri);
+
+    uploadTask.on('state_changed', (taskSnapshot) => {
+      let totalBytes = taskSnapshot.totalBytes;
+      let currentBytesTransferred = taskSnapshot.bytesTransferred;
+      let percentage = Math.floor((currentBytesTransferred / totalBytes) * 100);
+      uploadProgressChanged(percentage);
     });
 
-    return task
+    return uploadTask
+      .then(() => {
+        return postFileReference.getDownloadURL();
+      })
+      .then((downloadURL) => {
+        return firestore().collection('posts').add({
+          contentUrl: downloadURL,
+          createdOn: firestore.FieldValue.serverTimestamp(),
+          description: post.description.trim(),
+          ownerId: uid,
+          title: post.title.trim(),
+          type: post.photo.type,
+        });
+      })
       .then(() => {
         return true;
       })
-      .catch((error) => {
-        return rejectWithValue(error.message);
+      .catch((err) => {
+        console.log(err);
+        return rejectWithValue(err);
       });
+  },
+);
+
+const uploadProgressChanged = createAsyncThunk(
+  'posts/uploadProgressChanged',
+  async (progress, {rejectWithValue}) => {
+    if (progress) return progress;
+    else rejectWithValue('Percentage could not be shown.');
   },
 );
 
@@ -31,6 +64,7 @@ const postSlice = createSlice({
   name: 'posts',
   initialState: {
     isUploading: false,
+    uploadPercentage: null,
     errors: null,
   },
   reducers: {},
@@ -44,6 +78,13 @@ const postSlice = createSlice({
     },
     [createNewPost.fulfilled]: (state, action) => {
       state.isUploading = false;
+      state.uploadPercentage = null;
+    },
+    [uploadProgressChanged.rejected]: (state, action) => {
+      state.errors = action.payload;
+    },
+    [uploadProgressChanged.fulfilled]: (state, action) => {
+      state.uploadPercentage = action.payload;
     },
   },
 });

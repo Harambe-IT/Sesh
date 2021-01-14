@@ -19,7 +19,7 @@ import {createNewPost} from '../../features/posts/postSlice';
 const CreateContentScreen = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [photo, setPhoto] = useState(null);
+  const [fileSource, setFileSource] = useState(null);
 
   const dispatch = useDispatch();
   const {isUploading, errors} = useSelector((state) => state.posts);
@@ -38,25 +38,24 @@ const CreateContentScreen = () => {
         type,
         name,
       };
-      setPhoto(source);
+      setFileSource(source);
     }
   };
 
   const handleUpload = () => {
-    if (photo && photo.uri && photo.name && photo.type) {
-      dispatch(createNewPost(photo));
-    } else {
-      console.log('Provide a picture or video before trying to upload.');
+    if (!isUploading) {
+      console.log('Trying to upload..');
+      dispatch(createNewPost({fileSource: fileSource, title, description}));
     }
   };
 
   return (
     <View>
-      <View>
-        {photo?.uri && (
-          <Image style={styles.postImage} source={{uri: photo.uri}} />
-        )}
-      </View>
+      {fileSource?.uri && (
+        <View>
+          <Image style={styles.postImage} source={{uri: fileSource.uri}} />
+        </View>
+      )}
       <View>
         <Text>Title</Text>
         <TextBox placeholder="Title" onChangeText={setTitle} /*style={}*/ />
@@ -70,13 +69,18 @@ const CreateContentScreen = () => {
       </View>
       <TouchableOpacity
         onPress={() =>
-          launchImageLibrary({mediaType: 'photo'}, handleChooseImageCallback)
+          launchCamera({mediaType: 'image'}, handleChooseImageCallback)
         }>
         <Text>Choose Image</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={handleUpload}>
+      <TouchableOpacity onPress={handleUpload} disabled={isUploading}>
         <Text>Post</Text>
       </TouchableOpacity>
+      {errors && (
+        <View>
+          <Text>{JSON.stringify(errors)}</Text>
+        </View>
+      )}
       <Button
         onPress={() => {
           auth().signOut();

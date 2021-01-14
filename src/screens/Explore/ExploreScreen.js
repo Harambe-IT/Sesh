@@ -1,5 +1,5 @@
 import React from 'react';
-import {ScrollView, View, Button, Text} from 'react-native';
+import {ScrollView, View, Button, StyleSheet} from 'react-native';
 
 import auth from '@react-native-firebase/auth';
 
@@ -10,28 +10,28 @@ const ExploreScreen = () => {
   const posts = [
     {
       id: 1,
-      Owner: {
-        Name: 'Test Name 1',
-        ProfilePictureURL: {uri: 'https://via.placeholder.com/300.png'},
+      owner: {
+        name: 'Test name 1',
+        profilePictureURL: {uri: 'https://via.placeholder.com/300.png'},
       },
-      Likes: [{Owner: 'TestLikeOwner'}],
-      Reactions: [{Owner: 'TestReactionOwner', Content: 'Nice spot'}],
-      Content: {
-        Type: 'Picture',
-        ContentURL: {uri: 'https://picsum.photos/200/300'},
+      likes: [{ownerId: '5FxQShUQfOY13w6aSAXsmSkm5uJ3'}],
+      reactions: [{owner: 'TestReactionOwner', content: 'Nice spot'}],
+      content: {
+        type: 'Picture',
+        contentURL: {uri: 'https://picsum.photos/200/300'},
       },
     },
     {
       id: 2,
-      Owner: {
-        Name: 'Test Name 1',
-        ProfilePictureURL: {uri: 'https://via.placeholder.com/300.png'},
+      owner: {
+        name: 'Test name 1',
+        profilePictureURL: {uri: 'https://via.placeholder.com/300.png'},
       },
-      Likes: [{Owner: 'TestLikeOwner'}],
-      Reactions: [{Owner: 'TestReactionOwner', Content: 'Nice spot'}],
-      Content: {
-        Type: 'Video',
-        ContentURL: {
+      likes: [{owner: 'TestLikeOwner'}],
+      reactions: [{owner: 'TestReactionOwner', content: 'Nice spot'}],
+      content: {
+        type: 'Video',
+        contentURL: {
           uri:
             'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
         },
@@ -39,34 +39,34 @@ const ExploreScreen = () => {
     },
     {
       id: 3,
-      Owner: {
-        Name: 'Test Name 1',
-        ProfilePictureURL: {uri: 'https://via.placeholder.com/300.png'},
+      owner: {
+        name: 'Test name 1',
+        profilePictureURL: {uri: 'https://via.placeholder.com/300.png'},
       },
-      Likes: [{Owner: 'TestLikeOwner'}],
-      Reactions: [{Owner: 'TestReactionOwner', Content: 'Nice spot'}],
-      Content: {
-        Type: 'Picture',
-        ContentURL: {uri: 'https://picsum.photos/200/300'},
+      likes: [{owner: 'TestLikeOwner'}],
+      reactions: [{owner: 'TestReactionOwner', content: 'Nice spot'}],
+      content: {
+        type: 'Picture',
+        contentURL: {uri: 'https://picsum.photos/200/300'},
       },
     },
     {
       id: 4,
-      Owner: {
-        Name: 'Test Name 1',
-        ProfilePictureURL: {uri: 'https://via.placeholder.com/300.png'},
+      owner: {
+        name: 'Test name 1',
+        profilePictureURL: {uri: 'https://via.placeholder.com/300.png'},
       },
-      Likes: [{Owner: 'TestLikeOwner'}],
-      Reactions: [{Owner: 'TestReactionOwner', Content: 'Nice spot'}],
-      Content: {
-        Type: 'Picture',
-        ContentURL: {uri: 'https://picsum.photos/200/300'},
+      likes: [{owner: 'TestLikeOwner'}],
+      reactions: [{owner: 'TestReactionOwner', content: 'Nice spot'}],
+      content: {
+        type: 'Picture',
+        contentURL: {uri: 'https://picsum.photos/200/300'},
       },
     },
   ];
 
   const postList = posts.map((post) => {
-    switch (post.Content.Type) {
+    switch (post.content.type) {
       case 'Picture':
         return <Picture key={post.id} post={post} />;
       case 'Video':
@@ -78,7 +78,7 @@ const ExploreScreen = () => {
 
   return (
     <ScrollView>
-      <View>{postList}</View>
+      <View style={styles.container}>{postList}</View>
       <Button
         onPress={() => {
           auth().signOut();
@@ -92,3 +92,10 @@ const ExploreScreen = () => {
 };
 
 export default ExploreScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    paddingTop: 20,
+  },
+});

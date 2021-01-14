@@ -10,13 +10,21 @@ import ProfileScreen from '../../screens/Profile/ProfileScreen';
 import CreateContentScreen from '../../screens/CreateContent/CreateContentScreen';
 import Conversations from '../../screens/Messages/Conversations';
 import Header from '../../components/Common/Header';
+import TabBarIcon from '../../components/navigation/TabBarIcon';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 const TabScreens = () => {
   return (
-    <Tab.Navigator initialRouteName="Explore">
+    <Tab.Navigator
+      initialRouteName="Explore"
+      screenOptions={({route}) => ({
+        tabBarLabel: '',
+        tabBarIcon: ({focused}) => {
+          return <TabBarIcon routeName={route.name} focused={focused} />;
+        },
+      })}>
       <Tab.Screen name="Explore" component={ExploreScreen} />
       <Tab.Screen name="Discover" component={DiscoverScreen} />
       <Tab.Screen name="Create Content" component={CreateContentScreen} />
