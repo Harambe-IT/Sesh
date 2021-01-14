@@ -3,6 +3,7 @@ import {Image, View, StyleSheet} from 'react-native';
 
 const TabBarIcon = ({routeName, focused}) => {
   let icon;
+  let color = focused ? 'red' : 'black';
 
   switch (routeName) {
     case 'Explore':
@@ -29,7 +30,9 @@ const TabBarIcon = ({routeName, focused}) => {
       <Image
         source={icon}
         style={
-          routeName === 'Create Content' ? styles.tabIconLarge : styles.tabIcon
+          routeName === 'Create Content'
+            ? styles.tabIconLarge
+            : [styles.tabIcon, {tintColor: color}]
         }
       />
     </View>
