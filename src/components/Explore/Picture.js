@@ -22,7 +22,7 @@ const Picture = ({post}) => {
           style={styles.tinyProfilePicture}
           source={owner.profilePictureURL}
         />
-        <Text>{owner.name}</Text>
+        <Text style={styles.ownerName}>{owner.name}</Text>
         <Text style={styles.textRight}>{content.type}</Text>
       </View>
 
@@ -81,5 +81,10 @@ const styles = StyleSheet.create({
   },
   textRight: {
     marginLeft: 'auto',
+    fontWeight: 'bold',
+    color: 'red',
+  },
+  ownerName: {
+    fontWeight: 'bold',
   },
 });

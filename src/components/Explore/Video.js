@@ -24,7 +24,7 @@ const VideoPost = ({post}) => {
           style={styles.tinyProfilePicture}
           source={owner.profilePictureURL}
         />
-        <Text>{owner.mame}</Text>
+        <Text style={styles.ownerName}>{owner.name}</Text>
         <Text style={styles.textRight}>{content.type}</Text>
       </View>
 
@@ -81,5 +81,10 @@ const styles = StyleSheet.create({
   },
   textRight: {
     marginLeft: 'auto',
+    color: 'red',
+    fontWeight: 'bold',
+  },
+  ownerName: {
+    fontWeight: 'bold',
   },
 });

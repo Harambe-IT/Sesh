@@ -60,7 +60,9 @@ const LoginScreen = ({navigation}) => {
             <TextBox
               style={styles.EmailTextBox}
               onChangeText={setEmail}
-              placeholder="Username"></TextBox>
+              placeholder="Username"
+              placeholderTextColor="white"
+              textColor="black"></TextBox>
           </View>
 
           <View style={{marginTop: 32}}>
@@ -72,7 +74,9 @@ const LoginScreen = ({navigation}) => {
 
         <CupertinoButtonDanger
           style={styles.cupertinoButtonDanger}
-          onPress={() => handleLogin()}></CupertinoButtonDanger>
+          onPress={handleLogin}
+          text="Login"
+        />
 
         <View style={styles.image5Row}>
           <TouchableOpacity

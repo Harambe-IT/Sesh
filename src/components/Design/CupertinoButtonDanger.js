@@ -1,12 +1,13 @@
-import React, {Component} from 'react';
+import React from 'react';
 import {StyleSheet, TouchableOpacity, Text} from 'react-native';
 
-function CupertinoButtonDanger(props) {
+function CupertinoButtonDanger({style, onPress, text, disabled}) {
   return (
     <TouchableOpacity
-      style={[styles.container, props.style]}
-      onPress={props.onPress}>
-      <Text style={styles.logIn}>Log In</Text>
+      style={[styles.container, style]}
+      onPress={onPress}
+      disabled={disabled}>
+      <Text style={styles.text}>{text}</Text>
     </TouchableOpacity>
   );
 }
@@ -21,7 +22,7 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     paddingRight: 16,
   },
-  logIn: {
+  text: {
     color: '#fff',
     fontSize: 17,
   },

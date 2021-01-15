@@ -1,15 +1,26 @@
 import React from 'react';
-import {StyleSheet, View, TextInput} from 'react-native';
+import {StyleSheet, View, TextInput, Text} from 'react-native';
 
-function TextBox({style, placeholder, onChangeText}) {
+function TextBox({
+  style,
+  placeholder,
+  onChangeText,
+  textColor,
+  placeholderTextColor,
+  errors,
+}) {
   return (
-    <View style={[styles.container, style]}>
-      <TextInput
-        placeholder={placeholder}
-        style={styles.inputStyle}
-        placeholderTextColor="#FFFFFF"
-        onChangeText={onChangeText}></TextInput>
-    </View>
+    <>
+      <View style={[styles.container, style]}>
+        <TextInput
+          placeholder={placeholder}
+          style={[styles.inputStyle, {color: textColor}]}
+          placeholderTextColor={placeholderTextColor}
+          onChangeText={onChangeText}
+        />
+      </View>
+      {errors && <Text style={styles.errorMessage}>{errors}</Text>}
+    </>
   );
 }
 
@@ -24,7 +35,6 @@ const styles = StyleSheet.create({
   },
   inputStyle: {
     fontFamily: 'Myriad Pro',
-    color: '#000',
     paddingRight: 5,
     fontSize: 16,
     alignSelf: 'center',
@@ -32,6 +42,10 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     paddingTop: 16,
     paddingBottom: 5,
+  },
+  errorMessage: {
+    color: 'red',
+    alignSelf: 'flex-start',
   },
 });
 

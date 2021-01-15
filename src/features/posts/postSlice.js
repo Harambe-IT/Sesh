@@ -6,17 +6,19 @@ import firestore from '@react-native-firebase/firestore';
 export const createNewPost = createAsyncThunk(
   'posts/create',
   async (post, {rejectWithValue}) => {
+    let errorObject = {};
     let uid = auth().currentUser.uid || null;
-    if (!uid) return rejectWithValue({generic: "User wasn't authenticated"});
+    if (!uid) errorObject.generic = "User wasn't authenticated";
     if (!post.fileSource)
-      return rejectWithValue({
-        fileSource:
-          'Provide a picture or video before trying to post anything.',
-      });
-    if (!post.description)
-      return rejectWithValue({description: 'Provide a description, please.'});
-    if (!post.title)
-      return rejectWithValue({description: 'Provide a title, please.'});
+      errorObject.fileSource =
+        'Provide a picture or video before trying to post anything.';
+    if (!post.description || post.description.trim() === '')
+      errorObject.description = 'Provide a description, please.';
+    if (!post.title || post.title.trim() === '')
+      errorObject.title = 'Provide a title, please.';
+
+    if (Object.keys(errorObject).length > 0)
+      return rejectWithValue(errorObject);
 
     let postFileReference = storage().ref(`/${uid}/${post.fileSource.name}`);
     let uploadTask = postFileReference.putFile(post.fileSource.uri);
@@ -33,20 +35,21 @@ export const createNewPost = createAsyncThunk(
         return postFileReference.getDownloadURL();
       })
       .then((downloadURL) => {
-        return firestore().collection('posts').add({
-          contentUrl: downloadURL,
-          createdOn: firestore.FieldValue.serverTimestamp(),
-          description: post.description.trim(),
-          ownerId: uid,
-          title: post.title.trim(),
-          type: post.photo.type,
-        });
+        return firestore()
+          .collection('posts')
+          .add({
+            contentUrl: downloadURL,
+            createdOn: firestore.FieldValue.serverTimestamp(),
+            description: post.description.trim(),
+            ownerId: uid,
+            title: post.title.trim(),
+            type: post.fileSource.type?.includes('image') ? 'picture' : 'clip',
+          });
       })
       .then(() => {
         return true;
       })
       .catch((err) => {
-        console.log(err);
         return rejectWithValue(err);
       });
   },
@@ -66,6 +69,7 @@ const postSlice = createSlice({
     isUploading: false,
     uploadPercentage: null,
     errors: null,
+    uploaded: false,
   },
   reducers: {},
   extraReducers: {
@@ -79,6 +83,7 @@ const postSlice = createSlice({
     [createNewPost.fulfilled]: (state, action) => {
       state.isUploading = false;
       state.uploadPercentage = null;
+      state.uploaded = action.payload;
     },
     [uploadProgressChanged.rejected]: (state, action) => {
       state.errors = action.payload;

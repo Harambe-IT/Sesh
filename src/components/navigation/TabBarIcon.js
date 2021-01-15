@@ -12,7 +12,7 @@ const TabBarIcon = ({routeName, focused}) => {
     case 'Discover':
       icon = require('../../assets/images/navigation/icon_discover.png');
       break;
-    case 'Create Content':
+    case 'Create':
       icon = require('../../assets/images/navigation/icon_createContent.png');
       break;
     case 'Activity':
@@ -30,7 +30,7 @@ const TabBarIcon = ({routeName, focused}) => {
       <Image
         source={icon}
         style={
-          routeName === 'Create Content'
+          routeName === 'Create'
             ? styles.tabIconLarge
             : [styles.tabIcon, {tintColor: color}]
         }

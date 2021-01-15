@@ -7,7 +7,7 @@ import ExploreScreen from '../../screens/Explore/ExploreScreen';
 import DiscoverScreen from '../../screens/Discover/DiscoverScreen';
 import ActivityScreen from '../../screens/Activity/ActivityScreen';
 import ProfileScreen from '../../screens/Profile/ProfileScreen';
-import CreateContentScreen from '../../screens/CreateContent/CreateContentScreen';
+import CreationNavigationStack from '../../screens/CreateContent/CreationNavigationScreen';
 import Conversations from '../../screens/Messages/Conversations';
 import Header from '../../components/Common/Header';
 import TabBarIcon from '../../components/navigation/TabBarIcon';
@@ -27,7 +27,7 @@ const TabScreens = () => {
       })}>
       <Tab.Screen name="Explore" component={ExploreScreen} />
       <Tab.Screen name="Discover" component={DiscoverScreen} />
-      <Tab.Screen name="Create Content" component={CreateContentScreen} />
+      <Tab.Screen name="Create" component={CreationNavigationStack} />
       <Tab.Screen name="Activity" component={ActivityScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
@@ -36,17 +36,14 @@ const TabScreens = () => {
 
 const MainNavigation = () => {
   return (
-    <Stack.Navigator
-      initialRouteName="Tabs"
-      screenOptions={{
-        headerTitle: (props) => <Header {...props} />,
-      }}>
+    <Stack.Navigator initialRouteName="Tabs">
       <Stack.Screen
         name="Tabs"
         component={TabScreens}
         options={({route}) => {
-          const routeName = getFocusedRouteNameFromRoute(route) ?? 'Explore';
-          return {headerTitle: routeName};
+          let currentRouteName =
+            getFocusedRouteNameFromRoute(route) ?? 'Explore';
+          return {headerTitle: currentRouteName};
         }}
       />
       <Stack.Screen name="Conversations" component={Conversations} />
