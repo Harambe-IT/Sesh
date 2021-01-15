@@ -4,7 +4,7 @@ import {Text, View, Image, StyleSheet} from 'react-native';
 import auth from '@react-native-firebase/auth';
 
 const Picture = ({post}) => {
-  const {owner, content, likes, reactions} = post;
+  const {contentUrl, createdOn, description, owner, title, type, likes} = post;
   const [liked, setLiked] = useState(false);
 
   useEffect(() => {
@@ -20,13 +20,16 @@ const Picture = ({post}) => {
       <View style={styles.postInfoContainer}>
         <Image
           style={styles.tinyProfilePicture}
-          source={owner.profilePictureURL}
+          source={{uri: `https://picsum.photos/200/300?random=${post.docId}`}}
         />
-        <Text style={styles.ownerName}>{owner.name}</Text>
-        <Text style={styles.textRight}>{content.type}</Text>
+        <Text
+          style={
+            styles.ownerName
+          }>{`${owner.firstName} ${owner.lastName}`}</Text>
+        <Text style={styles.textRight}>{type}</Text>
       </View>
 
-      <Image style={styles.postImage} source={post.content.contentURL} />
+      <Image style={styles.postImage} source={{uri: contentUrl}} />
 
       <View style={styles.postInfoContainer}>
         <Image
@@ -37,12 +40,14 @@ const Picture = ({post}) => {
               : require('../../assets/images/posts/icon_like.png')
           }
         />
-        <Text style={styles.numberOfLR}>{likes.length}</Text>
+        {/* <Text style={styles.numberOfLR}>{likes.length}</Text> */}
+        <Text style={styles.numberOfLR}>1000</Text>
         <Image
           style={styles.tinyIcon}
           source={require('../../assets/images/posts/icon_comment.png')}
         />
-        <Text style={styles.numberOfLR}>{reactions.length}</Text>
+        {/* <Text style={styles.numberOfLR}>{reactions.length}</Text> */}
+        <Text style={styles.numberOfLR}>1000</Text>
       </View>
     </View>
   );

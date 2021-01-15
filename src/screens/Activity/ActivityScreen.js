@@ -3,7 +3,7 @@ import {View, Button, Text} from 'react-native';
 
 import auth from '@react-native-firebase/auth';
 
-const DiscoverScreen = () => {
+const ActivityScreen = () => {
   return (
     <View>
       <Text>Activity Screen</Text>
@@ -19,4 +19,4 @@ const DiscoverScreen = () => {
   );
 };
 
-export default DiscoverScreen;
+export default ActivityScreen;

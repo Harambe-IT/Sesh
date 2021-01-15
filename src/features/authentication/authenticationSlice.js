@@ -131,7 +131,9 @@ export const resetPassword = createAsyncThunk(
 export const authChanged = createAsyncThunk(
   'auth/authChanged',
   async (user, {rejectWithValue}) => {
-    return firestore()
+    let userData = {};
+
+    let userProfileTask = firestore()
       .collection('users')
       .doc(user.uid)
       .get()
@@ -140,17 +142,61 @@ export const authChanged = createAsyncThunk(
           throw new error(
             `User with id '${user.uid}' didn't exist in the firestore.`,
           );
-        return {
-          firstName: doc.data().firstName,
-          lastName: doc.data().lastName,
-          initials: doc.data().initials,
-          createdOn: doc.data().seconds,
-          username: user.displayName,
-        };
-      })
-      .catch((err) => {
-        return rejectWithValue(err.message);
+        userData.uid = doc.id;
+        userData.firstName = doc.data().firstName;
+        userData.lastName = doc.data().lastName;
+        userData.initials = doc.data().initials;
+        userData.createdOn = doc.data().seconds;
+        userData.username = user.displayName;
       });
+
+    let userFollowingTask = firestore()
+      .collection('followers')
+      .where('followedById', '==', user.uid)
+      .get()
+      .then((snapshot) => {
+        let following = [];
+        snapshot.forEach((doc) => {
+          following.push({
+            docId: doc.id,
+            ...doc.data(),
+          });
+        });
+
+        return following;
+      })
+      .then((following) => {
+        userData.following = following;
+      });
+
+    let userFollowedByTask = firestore()
+      .collection('followers')
+      .where('followedId', '==', user.uid)
+      .get()
+      .then((snapshot) => {
+        let followedBy = [];
+        snapshot.forEach((doc) => {
+          followedBy.push({
+            docId: doc.id,
+            ...doc.data(),
+          });
+        });
+
+        return followedBy;
+      })
+      .then((followedBy) => {
+        userData.followedBy = followedBy;
+      });
+
+    await Promise.all([
+      userProfileTask,
+      userFollowingTask,
+      userFollowedByTask,
+    ]).catch((err) => {
+      return rejectWithValue(err.message);
+    });
+
+    return userData;
   },
 );
 

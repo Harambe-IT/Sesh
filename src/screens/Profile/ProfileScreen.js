@@ -1,9 +1,10 @@
 import React from 'react';
 import {View, Button, Text} from 'react-native';
-
+import {useSelector} from 'react-redux';
 import auth from '@react-native-firebase/auth';
 
-const DiscoverScreen = () => {
+const ProfileScreen = () => {
+  const {user} = useSelector((state) => state.auth);
   return (
     <View>
       <Text>Profile Screen</Text>
@@ -19,4 +20,4 @@ const DiscoverScreen = () => {
   );
 };
 
-export default DiscoverScreen;
+export default ProfileScreen;

@@ -41,7 +41,7 @@ export const createNewPost = createAsyncThunk(
             contentUrl: downloadURL,
             createdOn: firestore.FieldValue.serverTimestamp(),
             description: post.description.trim(),
-            ownerId: uid,
+            owner: firestore().collection('users').doc(uid),
             title: post.title.trim(),
             type: post.fileSource.type?.includes('image') ? 'picture' : 'clip',
           });
@@ -50,6 +50,59 @@ export const createNewPost = createAsyncThunk(
         return true;
       })
       .catch((err) => {
+        return rejectWithValue(err);
+      });
+  },
+);
+
+export const getFollowingPosts = createAsyncThunk(
+  'posts/getFollowing',
+  async (user, {rejectWithValue}) => {
+    let uids = user.following.map((f) => {
+      return firestore().collection('users').doc(f.followedId);
+    });
+
+    // Add own id aswell
+    uids.push(firestore().collection('users').doc(user.uid));
+
+    return firestore()
+      .collection('posts')
+      .where('owner', 'in', uids)
+      .get()
+      .then((snapshot) => {
+        let posts = [];
+        let promises = [];
+
+        snapshot.forEach((doc) => {
+          let tempPost = {
+            docId: doc.id,
+            ...doc.data(),
+            createdOn: doc.data().createdOn.seconds,
+          };
+
+          // TODO: GET LIKES AND REACTIONS WITH A PROMISE
+          let getReferences = doc
+            .data()
+            .owner.get()
+            .then((doc) => {
+              tempPost.owner = {
+                uid: doc.id,
+                ...doc.data(),
+                createdOn: doc.data().createdOn.seconds,
+              };
+
+              posts.push(tempPost);
+            });
+
+          promises.push(getReferences);
+        });
+
+        return Promise.all(promises).then(() => {
+          return posts;
+        });
+      })
+      .catch((err) => {
+        console.log('error', err);
         return rejectWithValue(err);
       });
   },
@@ -66,6 +119,7 @@ const uploadProgressChanged = createAsyncThunk(
 const postSlice = createSlice({
   name: 'posts',
   initialState: {
+    isFetching: false,
     isUploading: false,
     uploadPercentage: null,
     errors: null,
@@ -90,6 +144,20 @@ const postSlice = createSlice({
     },
     [uploadProgressChanged.fulfilled]: (state, action) => {
       state.uploadPercentage = action.payload;
+    },
+    [getFollowingPosts.pending]: (state, action) => {
+      state.isFetching = true;
+      state.errors = null;
+      state.uploaded = false;
+    },
+    [getFollowingPosts.fulfilled]: (state, action) => {
+      state.isFetching = false;
+      state.posts = action.payload;
+    },
+    [getFollowingPosts.rejected]: (state, action) => {
+      state.isFetching = false;
+      state.errors = action.payload;
+      console.log(JSON.stringify(action, null, 2));
     },
   },
 });
