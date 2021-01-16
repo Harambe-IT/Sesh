@@ -1,19 +1,40 @@
 import React, {useState, useEffect} from 'react';
-import {Text, View, Image, StyleSheet} from 'react-native';
-
+import {Text, View, Image, StyleSheet, TouchableOpacity} from 'react-native';
 import auth from '@react-native-firebase/auth';
+import {useSelector, useDispatch} from 'react-redux';
+
+import {likePost} from '../../features/posts/postSlice';
 
 const Picture = ({post}) => {
-  const {contentUrl, createdOn, description, owner, title, type, likes} = post;
-  const [liked, setLiked] = useState(false);
+  const {
+    contentUrl,
+    createdOn,
+    description,
+    owner,
+    title,
+    type,
+    reactions,
+    likes,
+  } = post;
+  const [likedPost, setLikedPost] = useState(false);
+  const dispatch = useDispatch();
+  const {isFetching, errors} = useSelector((state) => state.posts);
 
   useEffect(() => {
-    setLiked(
-      likes?.filter((l) => l.ownerId === auth().currentUser.uid).length > 0
+    setLikedPost(
+      likes?.filter((l) => l.owner.uid === auth().currentUser.uid).length > 0
         ? true
         : false,
     );
-  }, []);
+  }, [likes]);
+
+  const handleLike = () => {
+    dispatch(likePost(post.docId));
+  };
+
+  const handleReaction = () => {
+    console.log('reacting...');
+  };
 
   return (
     <View style={styles.postContainer}>
@@ -32,22 +53,26 @@ const Picture = ({post}) => {
       <Image style={styles.postImage} source={{uri: contentUrl}} />
 
       <View style={styles.postInfoContainer}>
-        <Image
-          style={styles.tinyIcon}
-          source={
-            liked
-              ? require('../../assets/images/posts/icon_liked.png')
-              : require('../../assets/images/posts/icon_like.png')
-          }
-        />
-        {/* <Text style={styles.numberOfLR}>{likes.length}</Text> */}
-        <Text style={styles.numberOfLR}>1000</Text>
-        <Image
-          style={styles.tinyIcon}
-          source={require('../../assets/images/posts/icon_comment.png')}
-        />
-        {/* <Text style={styles.numberOfLR}>{reactions.length}</Text> */}
-        <Text style={styles.numberOfLR}>1000</Text>
+        <TouchableOpacity onPress={handleLike} style={styles.postInfoContainer}>
+          <Image
+            style={styles.tinyIcon}
+            source={
+              likedPost
+                ? require('../../assets/images/posts/icon_liked.png')
+                : require('../../assets/images/posts/icon_like.png')
+            }
+          />
+          <Text style={styles.numberOfLR}>{likes.length}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleReaction}
+          style={styles.postInfoContainer}>
+          <Image
+            style={styles.tinyIcon}
+            source={require('../../assets/images/posts/icon_comment.png')}
+          />
+          <Text style={styles.numberOfLR}>{reactions.length}</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

@@ -21,7 +21,12 @@ const ExploreScreen = () => {
   }, []);
 
   useEffect(() => {
+    console.log(errors);
+  }, [errors]);
+
+  useEffect(() => {
     if (refreshing && !isFetching) setRefreshing(false);
+    if (isFetching && !refreshing) setRefreshing(true);
   }, [refreshing, isFetching]);
 
   const postList =

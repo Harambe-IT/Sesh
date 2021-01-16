@@ -68,8 +68,9 @@ export const getFollowingPosts = createAsyncThunk(
     return firestore()
       .collection('posts')
       .where('owner', 'in', uids)
+      .orderBy('createdOn')
       .get()
-      .then((snapshot) => {
+      .then(async (snapshot) => {
         let posts = [];
         let promises = [];
 
@@ -80,8 +81,7 @@ export const getFollowingPosts = createAsyncThunk(
             createdOn: doc.data().createdOn.seconds,
           };
 
-          // TODO: GET LIKES AND REACTIONS WITH A PROMISE
-          let getReferences = doc
+          let getOwnerData = doc
             .data()
             .owner.get()
             .then((doc) => {
@@ -90,11 +90,27 @@ export const getFollowingPosts = createAsyncThunk(
                 ...doc.data(),
                 createdOn: doc.data().createdOn.seconds,
               };
-
-              posts.push(tempPost);
             });
 
-          promises.push(getReferences);
+          let getLikes = getLikesFromPost(tempPost.docId).then((likes) => {
+            tempPost.likes = likes;
+          });
+
+          let getReactions = getReactionsFromPost(tempPost.docId).then(
+            (reactions) => {
+              tempPost.reactions = reactions;
+            },
+          );
+
+          let addToList = Promise.all([
+            getOwnerData,
+            getLikes,
+            getReactions,
+          ]).then(() => {
+            posts.push(tempPost);
+          });
+
+          promises.push(addToList);
         });
 
         return Promise.all(promises).then(() => {
@@ -102,17 +118,136 @@ export const getFollowingPosts = createAsyncThunk(
         });
       })
       .catch((err) => {
-        console.log('error', err);
-        return rejectWithValue(err);
+        return rejectWithValue(err.message);
       });
   },
 );
+
+const getLikesFromPost = async (postId) => {
+  return firestore()
+    .collection('posts')
+    .doc(postId)
+    .collection('likes')
+    .get()
+    .then(async (snapshot) => {
+      let likes = [];
+      let likePromises = [];
+
+      snapshot.forEach((doc) => {
+        let tempLike = {
+          docId: doc.id,
+        };
+
+        let getLikeOwnerData = doc
+          .data()
+          .owner.get()
+          .then((doc) => {
+            tempLike.owner = {
+              uid: doc.id,
+              ...doc.data(),
+              createdOn: doc.data().createdOn.seconds,
+            };
+
+            likes.push(tempLike);
+          });
+
+        likePromises.push(getLikeOwnerData);
+      });
+
+      return Promise.all(likePromises).then(() => {
+        return likes;
+      });
+    });
+};
+
+const getReactionsFromPost = async (postId) => {
+  return firestore()
+    .collection('posts')
+    .doc(postId)
+    .collection('reactions')
+    .get()
+    .then(async (snapshot) => {
+      let reactions = [];
+      let reactionPromises = [];
+
+      snapshot.forEach((doc) => {
+        let tempReaction = {
+          docId: doc.id,
+          ...doc.data(),
+          createdOn: doc.data().createdOn.seconds,
+        };
+
+        let getReactionOwnerData = doc
+          .data()
+          .owner.get()
+          .then((doc) => {
+            tempReaction.owner = {
+              uid: doc.id,
+              ...doc.data(),
+              createdOn: doc.data().createdOn.seconds,
+            };
+
+            reactions.push(tempReaction);
+          });
+
+        reactionPromises.push(getReactionOwnerData);
+      });
+
+      return Promise.all(reactionPromises).then(() => {
+        return reactions;
+      });
+    });
+};
 
 const uploadProgressChanged = createAsyncThunk(
   'posts/uploadProgressChanged',
   async (progress, {rejectWithValue}) => {
     if (progress) return progress;
     else rejectWithValue('Percentage could not be shown.');
+  },
+);
+
+export const likePost = createAsyncThunk(
+  'posts/like',
+  async (postId, {rejectWithValue}) => {
+    let uid = auth().currentUser.uid;
+    let userReference = firestore().collection('users').doc(uid);
+    let postLikesReference = firestore()
+      .collection('posts')
+      .doc(postId)
+      .collection('likes');
+
+    return postLikesReference
+      .where('owner', '==', userReference)
+      .get()
+      .then(async (snapshot) => {
+        if (snapshot.empty) {
+          return postLikesReference.add({owner: userReference}).then(() => {
+            return userReference
+              .get()
+              .then((doc) => {
+                return {
+                  uid: doc.id,
+                  ...doc.data(),
+                  createdOn: doc.data().createdOn.seconds,
+                };
+              })
+              .then((owner) => {
+                return {liked: true, postId, owner};
+              });
+          });
+        } else {
+          return postLikesReference
+            .doc(snapshot.docs[0].id)
+            .delete()
+            .then(() => {
+              return {liked: false, postId, uid};
+            });
+        }
+      })
+      .catch((err) => {
+        return rejectWithValue(err);
+      });
   },
 );
 
@@ -124,6 +259,7 @@ const postSlice = createSlice({
     uploadPercentage: null,
     errors: null,
     uploaded: false,
+    posts: null,
   },
   reducers: {},
   extraReducers: {
@@ -157,9 +293,39 @@ const postSlice = createSlice({
     [getFollowingPosts.rejected]: (state, action) => {
       state.isFetching = false;
       state.errors = action.payload;
-      console.log(JSON.stringify(action, null, 2));
+    },
+    [likePost.pending]: (state, action) => {
+      state.isFetching = true;
+      state.errors = null;
+    },
+    [likePost.fulfilled]: (state, action) => {
+      state.isFetching = false;
+
+      const {liked, postId} = action.payload;
+      let indexPostElement;
+      let tempPostElement = state.posts.filter((el, i) => {
+        if (el.docId === postId) indexPostElement = i;
+        return el.docId === postId;
+      })[0];
+
+      if (liked) {
+        const {owner} = action.payload;
+        tempPostElement.likes.push({owner});
+        state.posts[indexPostElement] = tempPostElement;
+      } else {
+        const {uid} = action.payload;
+        tempPostElement.likes = tempPostElement.likes.filter(
+          (like) => like.owner.uid !== uid,
+        );
+        state.posts[indexPostElement] = tempPostElement;
+      }
+    },
+    [likePost.rejected]: (state, action) => {
+      state.isFetching = false;
+      state.errors = null;
     },
   },
 });
 
+export const {resetLiked} = postSlice.actions;
 export default postSlice.reducer;
