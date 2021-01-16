@@ -21,10 +21,6 @@ const ExploreScreen = () => {
   }, []);
 
   useEffect(() => {
-    console.log(errors);
-  }, [errors]);
-
-  useEffect(() => {
     if (refreshing && !isFetching) setRefreshing(false);
     if (isFetching && !refreshing) setRefreshing(true);
   }, [refreshing, isFetching]);
@@ -33,9 +29,9 @@ const ExploreScreen = () => {
     posts?.length > 0 ? (
       posts.map((post) => {
         switch (post.type) {
-          case 'Picture':
+          case 'picture':
             return <Picture key={post.docId} post={post} />;
-          case 'Clip':
+          case 'clip':
             return <Video key={post.docId} post={post} />;
           default:
             return <Picture key={post.docId} post={post} />;
