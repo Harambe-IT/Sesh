@@ -91,6 +91,14 @@ export const signInGoogle = createAsyncThunk(
 export const signUp = createAsyncThunk(
   'auth/signUp',
   async (user, {rejectWithValue}) => {
+    if (
+      user.email.trim() === '' ||
+      user.password.trim() === '' ||
+      user.username.trim() === ''
+    )
+      return rejectWithValue(
+        'Please fill in a password, email and/or username.',
+      );
     return auth()
       .createUserWithEmailAndPassword(user.email, user.password)
       .then((result) => {
@@ -230,6 +238,25 @@ const authSlice = createSlice({
       else if (action.payload.includes('auth/wrong-password'))
         state.loginErrors = 'Email and/or password were incorrect.';
       else state.loginErrors = action.payload;
+    },
+    [signUp.pending]: (state, action) => {
+      state.isFetching = true;
+    },
+    [signUp.rejected]: (state, action) => {
+      state.isFetching = false;
+      state.user = null;
+
+      if (action.payload.includes('auth/invalid-email'))
+        state.signUpErrors =
+          'The email address is not valid.\nProvide a valid email address when trying to login.';
+      else if (action.payload.includes('auth/user-disabled'))
+        state.signUpErrors =
+          "The account you're trying to login to is disabled.\nContact support for more information.";
+      else if (action.payload.includes('auth/user-not-found'))
+        state.signUpErrors = 'Email and/or password were incorrect.';
+      else if (action.payload.includes('auth/wrong-password'))
+        state.signUpErrors = 'Email and/or password were incorrect.';
+      else state.signUpErrors = action.payload;
     },
     [authChanged.pending]: (state, action) => {
       state.isFetching = true;

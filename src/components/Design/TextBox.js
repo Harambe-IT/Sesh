@@ -8,6 +8,7 @@ function TextBox({
   textColor,
   placeholderTextColor,
   errors,
+  isPassword,
 }) {
   let marginBottom = errors ? 0 : 20;
 
@@ -19,6 +20,7 @@ function TextBox({
           style={[styles.inputStyle, {color: textColor}]}
           placeholderTextColor={placeholderTextColor}
           onChangeText={onChangeText}
+          secureTextEntry={isPassword}
         />
       </View>
       {errors && <Text style={styles.errorMessage}>{errors}</Text>}
@@ -47,7 +49,7 @@ const styles = StyleSheet.create({
   },
   errorMessage: {
     color: 'red',
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
   },
 });
 

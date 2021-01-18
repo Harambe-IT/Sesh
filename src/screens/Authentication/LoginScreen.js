@@ -1,13 +1,11 @@
 import React from 'react';
 import {
-  ScrollView,
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ImageBackground,
   Image,
-  Dimensions,
 } from 'react-native';
 
 import {useSelector, useDispatch} from 'react-redux';
@@ -17,7 +15,6 @@ import {
   signInGoogle,
 } from '../../features/authentication/authenticationSlice';
 
-import PasswordTextBox from '../../components/Design/PasswordTextBox';
 import TextBox from '../../components/Design/TextBox';
 import CupertinoButtonDanger from '../../components/Design/CupertinoButtonDanger';
 
@@ -43,36 +40,34 @@ const LoginScreen = ({navigation}) => {
     <View style={styles.container}>
       <ImageBackground
         source={require('../../assets/images/image_InBb.png')}
-        resizeMode="contain"
-        style={styles.image}
-        imageStyle={styles.image_imageStyle}>
-        <Image
-          source={require('../../assets/images/image_iWBB.png')}
-          resizeMode="contain"
-          style={styles.image2}></Image>
-        <View style={styles.loremIpsumRow}>
-          <Text style={styles.loremIpsum}>Sesh {'\n'}With</Text>
-          <Text style={styles.loremIpsum1}>everywhere.{'\n'}everyone.</Text>
+        style={styles.backgroundImage}>
+        <View style={styles.row}>
+          <Image
+            source={require('../../assets/images/image_iWBB.png')}
+            style={styles.logoImage}
+          />
         </View>
-
-        <View style={styles.form}>
-          <View>
-            <TextBox
-              style={styles.EmailTextBox}
-              onChangeText={setEmail}
-              placeholder="Email"
-              placeholderTextColor="white"
-              textColor="black"></TextBox>
-          </View>
-
-          <View style={{marginTop: 32}}>
-            <PasswordTextBox
-              style={styles.PasswordTextBox}
-              onChangeText={setPassword}
-              errors={loginErrors}
-            />
-          </View>
+        <View style={[styles.row, {marginTop: -50}]}>
+          <Text style={styles.catchPhraseWhite}>Sesh {'\n'}With</Text>
+          <Text style={styles.catchPhraseRed}>everywhere.{'\n'}everyone.</Text>
         </View>
+        <TextBox
+          style={styles.textBox}
+          onChangeText={setEmail}
+          placeholder="Email"
+          placeholderTextColor="white"
+          textColor="white"
+          isPassword={false}
+        />
+        <TextBox
+          style={styles.textBox}
+          onChangeText={setPassword}
+          placeholder="Password"
+          placeholderTextColor="white"
+          textColor="white"
+          isPassword={true}
+          errors={loginErrors}
+        />
 
         <View style={styles.row}>
           <CupertinoButtonDanger
@@ -80,32 +75,39 @@ const LoginScreen = ({navigation}) => {
             onPress={handleLogin}
             text="Login"
           />
-          <CupertinoButtonDanger
-            style={styles.cupertinoButtonDanger}
-            onPress={() => navigation.navigate('Register')}
-            text="Register"
-          />
         </View>
 
-        <View style={styles.image5Row}>
+        <View style={styles.row}>
           <TouchableOpacity
             activeOpacity={0.5}
-            style={[styles.socialButton, {left: -3}]}
-            onPress={() => handleFacebookLogin()}>
+            style={[styles.socialButton, {marginRight: 50, marginLeft: 'auto'}]}
+            onPress={handleFacebookLogin}>
             <Image
               source={require('../../assets/images/icon_facebook.png')}
-              resizeMode="contain"
-              style={styles.socialImage}></Image>
+              style={styles.socialImage}
+            />
           </TouchableOpacity>
 
           <TouchableOpacity
             activeOpacity={0.5}
-            style={[styles.socialButton, {left: 100}]}
-            onPress={() => handleGoogleLogin()}>
+            style={[styles.socialButton, {marginLeft: 50, marginRight: 'auto'}]}
+            onPress={handleGoogleLogin}>
             <Image
               source={require('../../assets/images/icon_google.png')}
-              resizeMode="contain"
-              style={styles.socialImage}></Image>
+              style={styles.socialImage}
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.row}>
+          <TouchableOpacity
+            style={{marginLeft: 'auto', marginRight: 25}}
+            onPress={() => navigation.navigate('Reset Password')}>
+            <Text style={styles.navigationalLinkText}>Reset Password</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{marginRight: 'auto', marginLeft: 45}}
+            onPress={() => navigation.navigate('Register')}>
+            <Text style={styles.navigationalLinkText}>Register</Text>
           </TouchableOpacity>
         </View>
       </ImageBackground>
@@ -116,75 +118,56 @@ const LoginScreen = ({navigation}) => {
 export default LoginScreen;
 
 const styles = StyleSheet.create({
-  errorMessage: {
-    marginLeft: 100,
-  },
-  row: {
-    flexDirection: 'row',
-  },
   container: {
     flex: 1,
   },
-  image: {
-    height: 1322,
-    width: 556,
-    marginTop: -247,
-    marginLeft: -91,
+  backgroundImage: {
+    ...StyleSheet.absoluteFillObject,
   },
-  image2: {
-    height: 128,
-    width: 128,
-    marginTop: 270,
-    marginLeft: 220,
+  row: {
+    flexDirection: 'row',
+    paddingVertical: 10,
   },
-  loremIpsum: {
+  logoImage: {
+    height: 150,
+    width: 100,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+  },
+  catchPhraseWhite: {
     fontFamily: 'roboto-700',
     color: 'rgba(255,255,255,1)',
     fontSize: 33,
-    width: 81,
-    height: 78,
+    marginLeft: 'auto',
   },
-  loremIpsum1: {
+  catchPhraseRed: {
     fontFamily: 'roboto-700',
     color: 'rgba(255,0,31,1)',
     fontSize: 33,
+    marginRight: 'auto',
   },
-  loremIpsumRow: {
-    height: 80,
-    flexDirection: 'row',
-    marginLeft: 190,
-    marginRight: 141,
-  },
-  EmailTextBox: {
+  textBox: {
     height: 50,
-    width: 159,
-    marginTop: 80,
-    marginLeft: 210,
-  },
-  PasswordTextBox: {
-    height: 50,
-    width: 159,
-    marginTop: 10,
-    marginLeft: 210,
+    width: 200,
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
   cupertinoButtonDanger: {
     height: 40,
-    width: 100,
+    width: 203,
     marginTop: 5,
+    marginRight: 'auto',
+    marginLeft: 'auto',
   },
   socialImage: {
     width: 54,
     height: 54,
   },
-  image5Row: {
-    height: 54,
-    flexDirection: 'row',
-    marginTop: 55,
-    marginLeft: 214,
-    marginRight: 213,
+  resetPasswordContainer: {
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
-  socialButton: {
-    position: 'absolute',
-    top: -45,
+  resetPasswordText: {
+    textDecorationLine: 'underline',
   },
 });

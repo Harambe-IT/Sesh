@@ -1,11 +1,11 @@
 import React from 'react';
 import {
   View,
-  ScrollView,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
+  ImageBackground,
+  Image,
 } from 'react-native';
 
 import {useSelector, useDispatch} from 'react-redux';
@@ -15,12 +15,19 @@ import {
   signInGoogle,
 } from '../../features/authentication/authenticationSlice';
 
+import TextBox from '../../components/Design/TextBox';
+import CupertinoButtonDanger from '../../components/Design/CupertinoButtonDanger';
+
 const RegisterScreen = ({navigation}) => {
   const [username, setUsername] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const dispatch = useDispatch();
   const {signUpErrors} = useSelector((state) => state.auth);
+
+  const handleRegister = () => {
+    dispatch(signUp({email, password, username}));
+  };
 
   const handleFacebookLogin = () => {
     dispatch(signInFacebook());
@@ -30,75 +37,90 @@ const RegisterScreen = ({navigation}) => {
     dispatch(signInGoogle());
   };
 
-  const handleRegister = () => {
-    dispatch(signUp({email, password, username}));
-  };
-
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.greeting}>
-        Join the <Text style={styles.greetingRed}>sesh.</Text>
-      </Text>
-      {signUpErrors && (
-        <View style={styles.errorMessage}>
-          <Text style={styles.error}>{signUpErrors}</Text>
+    <View style={styles.container}>
+      <ImageBackground
+        source={require('../../assets/images/image_InBb.png')}
+        style={styles.backgroundImage}>
+        <View style={styles.row}>
+          <Image
+            source={require('../../assets/images/image_iWBB.png')}
+            style={styles.logoImage}
+          />
         </View>
-      )}
+        <View style={[styles.row, {marginTop: -50}]}>
+          <Text style={styles.catchPhraseWhite}>Sesh {'\n'}With</Text>
+          <Text style={styles.catchPhraseRed}>everywhere.{'\n'}everyone.</Text>
+        </View>
+        <TextBox
+          style={styles.textBox}
+          onChangeText={setUsername}
+          placeholder="Username"
+          placeholderTextColor="white"
+          textColor="white"
+          isPassword={false}
+        />
+        <TextBox
+          style={styles.textBox}
+          onChangeText={setEmail}
+          placeholder="Email"
+          placeholderTextColor="white"
+          textColor="white"
+          isPassword={false}
+        />
+        <TextBox
+          style={styles.textBox}
+          onChangeText={setPassword}
+          placeholder="Password"
+          placeholderTextColor="white"
+          textColor="white"
+          isPassword={true}
+          errors={signUpErrors}
+        />
 
-      <View style={styles.form}>
-        <View>
-          <Text style={styles.inputTitle}>Username</Text>
-          <TextInput
-            style={styles.input}
-            autoCapitalize="none"
-            onChangeText={setUsername}
+        <View style={styles.row}>
+          <CupertinoButtonDanger
+            style={styles.cupertinoButtonDanger}
+            onPress={handleRegister}
+            text="Register"
           />
         </View>
 
-        <View style={{marginTop: 32}}>
-          <Text style={styles.inputTitle}>Email</Text>
-          <TextInput
-            style={styles.input}
-            autoCapitalize="none"
-            onChangeText={setEmail}
-          />
+        <View style={styles.row}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={[styles.socialButton, {marginRight: 50, marginLeft: 'auto'}]}
+            onPress={handleFacebookLogin}>
+            <Image
+              source={require('../../assets/images/icon_facebook.png')}
+              style={styles.socialImage}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={[styles.socialButton, {marginLeft: 50, marginRight: 'auto'}]}
+            onPress={handleGoogleLogin}>
+            <Image
+              source={require('../../assets/images/icon_google.png')}
+              style={styles.socialImage}
+            />
+          </TouchableOpacity>
         </View>
-
-        <View style={{marginTop: 32}}>
-          <Text style={styles.inputTitle}>Password</Text>
-          <TextInput
-            style={styles.input}
-            secureTextEntry
-            autoCapitalize="none"
-            onChangeText={setPassword}
-          />
+        <View style={styles.row}>
+          <TouchableOpacity
+            style={{marginLeft: 'auto', marginRight: 25}}
+            onPress={() => navigation.navigate('Reset Password')}>
+            <Text style={styles.navigationalLinkText}>Reset Password</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{marginRight: 'auto', marginLeft: 45}}
+            onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.navigationalLinkText}>Login</Text>
+          </TouchableOpacity>
         </View>
-      </View>
-
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Register</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.button} onPress={handleFacebookLogin}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Facebook Log In</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.button} onPress={handleGoogleLogin}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Google Log In</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('Login')}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Login</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('Reset Password')}>
-        <Text style={{color: '#fff', fontWeight: '500'}}>Reset Password</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      </ImageBackground>
+    </View>
   );
 };
 
@@ -108,54 +130,49 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  greeting: {
-    marginTop: 32,
-    fontSize: 18,
-    fontWeight: '400',
-    textAlign: 'center',
+  backgroundImage: {
+    ...StyleSheet.absoluteFillObject,
   },
-  greetingRed: {
-    marginTop: 32,
-    fontSize: 18,
-    fontWeight: '400',
-    textAlign: 'center',
-    color: 'red',
+  row: {
+    flexDirection: 'row',
+    paddingVertical: 10,
   },
-  errorMessage: {
-    height: 72,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 30,
+  logoImage: {
+    height: 150,
+    width: 100,
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
-  error: {
-    color: '#e9446a',
-    fontSize: 13,
-    fontWeight: '600',
-    textAlign: 'center',
+  catchPhraseWhite: {
+    fontFamily: 'roboto-700',
+    color: 'rgba(255,255,255,1)',
+    fontSize: 33,
+    marginLeft: 'auto',
   },
-  form: {
-    marginBottom: 48,
-    marginHorizontal: 39,
+  catchPhraseRed: {
+    fontFamily: 'roboto-700',
+    color: 'rgba(255,0,31,1)',
+    fontSize: 33,
+    marginRight: 'auto',
   },
-  inputTitle: {
-    color: '#8a8f9e',
-    fontSize: 10,
-    textTransform: 'uppercase',
+  textBox: {
+    height: 50,
+    width: 200,
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
-  input: {
-    borderBottomColor: '#8a8f9e',
-    borderBottomWidth: StyleSheet.hairlineWidth,
+  cupertinoButtonDanger: {
     height: 40,
-    fontSize: 15,
-    color: '#151f3d',
+    width: 203,
+    marginTop: 5,
+    marginRight: 'auto',
+    marginLeft: 'auto',
   },
-  button: {
-    marginHorizontal: 30,
-    backgroundColor: '#e9446a',
-    borderRadius: 4,
-    height: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 10,
+  socialImage: {
+    width: 54,
+    height: 54,
+  },
+  navigationalLinkText: {
+    textDecorationLine: 'underline',
   },
 });
