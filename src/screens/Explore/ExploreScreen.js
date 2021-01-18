@@ -8,7 +8,9 @@ import {getFollowingPosts} from '../../features/posts/postSlice';
 const ExploreScreen = () => {
   const dispatch = useDispatch();
   const {user} = useSelector((state) => state.auth);
-  const {posts, isFetching, errors} = useSelector((state) => state.posts);
+  const {postsFollowing, isFetching, errors} = useSelector(
+    (state) => state.posts,
+  );
   const [refreshing, setRefreshing] = React.useState(false);
 
   const handleRefresh = () => {
@@ -26,19 +28,22 @@ const ExploreScreen = () => {
   }, [refreshing, isFetching]);
 
   const postList =
-    posts?.length > 0 ? (
-      posts.map((post) => {
+    postsFollowing?.length > 0 ? (
+      postsFollowing.map((post) => {
         switch (post.type) {
           case 'picture':
-            return <Picture key={post.docId} post={post} />;
+            return <Picture key={post.docId} post={post} page="Explore" />;
           case 'clip':
-            return <Video key={post.docId} post={post} />;
+            return <Video key={post.docId} post={post} page="Explore" />;
           default:
-            return <Picture key={post.docId} post={post} />;
+            return <Picture key={post.docId} post={post} page="Explore" />;
         }
       })
     ) : (
-      <Text>No posts were found.</Text>
+      <Text>
+        No posts were found.{'\n'}Try following someone or posting something
+        yourself.
+      </Text>
     );
 
   return (

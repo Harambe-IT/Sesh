@@ -7,8 +7,8 @@ const Display = ({style, source}) => {
   return <Image style={style} source={source} />;
 };
 
-const Picture = ({post}) => {
-  return <PostComponent display={Display} post={post} />;
+const Picture = ({post, page}) => {
+  return <PostComponent display={Display} post={post} page={page} />;
 };
 
 export default Picture;

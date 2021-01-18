@@ -18,8 +18,8 @@ const Display = ({style, source}) => {
   );
 };
 
-const VideoPost = ({post}) => {
-  return <PostComponent display={Display} post={post} />;
+const VideoPost = ({post, page}) => {
+  return <PostComponent display={Display} post={post} page={page} />;
 };
 
 export default VideoPost;

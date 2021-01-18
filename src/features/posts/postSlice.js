@@ -3,6 +3,8 @@ import storage from '@react-native-firebase/storage';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
+const MAX_DELTA = 100 / 110.4; // Around 100km
+
 export const createNewPost = createAsyncThunk(
   'posts/create',
   async (post, {rejectWithValue}) => {
@@ -40,7 +42,6 @@ export const createNewPost = createAsyncThunk(
           .add({
             contentUrl: downloadURL,
             createdOn: firestore.FieldValue.serverTimestamp(),
-            description: post.description.trim(),
             owner: firestore().collection('users').doc(uid),
             title: post.title.trim(),
             type: post.fileSource.type?.includes('image') ? 'picture' : 'clip',
@@ -112,6 +113,82 @@ export const getFollowingPosts = createAsyncThunk(
           });
 
           promises.push(addToList);
+        });
+
+        return Promise.all(promises).then(() => {
+          return posts;
+        });
+      })
+      .catch((err) => {
+        return rejectWithValue(err.message);
+      });
+  },
+);
+
+export const getAllPostsByRegion = createAsyncThunk(
+  'posts/getAllPostsByRegion',
+  async (region, {rejectWithValue}) => {
+    let latitudeDelta = region.latitudeDelta;
+    let longitudeDelta = region.longitudeDelta;
+    if (latitudeDelta > MAX_DELTA) latitudeDelta = MAX_DELTA;
+    if (longitudeDelta > MAX_DELTA) longitudeDelta = MAX_DELTA;
+
+    return firestore()
+      .collection('posts')
+      .where('location.latitude', '>=', region.latitude - latitudeDelta)
+      .where('location.latitude', '<=', region.latitude + latitudeDelta)
+      .get()
+      .then(async (snapshot) => {
+        let posts = [];
+        let promises = [];
+
+        console.log(snapshot.size, 'posts found');
+        snapshot.forEach((doc) => {
+          let tempPost = {
+            docId: doc.id,
+            ...doc.data(),
+            createdOn: doc.data().createdOn.seconds,
+            location: {
+              longitude: doc.data().location.longitude,
+              latitude: doc.data().location.latitude,
+            },
+          };
+
+          if (
+            tempPost.location.longitude >= region.longitude - longitudeDelta &&
+            tempPost.location.longitude <= region.longitude + longitudeDelta
+          ) {
+            let getOwnerData = doc
+              .data()
+              .owner.get()
+              .then((doc) => {
+                tempPost.owner = {
+                  uid: doc.id,
+                  ...doc.data(),
+                  createdOn: doc.data().createdOn.seconds,
+                };
+              });
+
+            let getLikes = getLikesFromPost(tempPost.docId).then((likes) => {
+              tempPost.likes = likes;
+            });
+
+            let getReactions = getReactionsFromPost(tempPost.docId).then(
+              (reactions) => {
+                tempPost.reactions = reactions;
+              },
+            );
+
+            let addToList = Promise.all([
+              getOwnerData,
+              getLikes,
+              getReactions,
+            ]).then(() => {
+              posts.push(tempPost);
+            });
+
+            promises.push(addToList);
+          }
         });
 
         return Promise.all(promises).then(() => {
@@ -210,7 +287,7 @@ const uploadProgressChanged = createAsyncThunk(
 
 export const likePost = createAsyncThunk(
   'posts/like',
-  async (postId, {rejectWithValue}) => {
+  async ({postId, page}, {rejectWithValue}) => {
     let uid = auth().currentUser.uid;
     let userReference = firestore().collection('users').doc(uid);
     let postLikesReference = firestore()
@@ -234,7 +311,7 @@ export const likePost = createAsyncThunk(
                 };
               })
               .then((owner) => {
-                return {liked: true, postId, owner};
+                return {liked: true, postId, owner, page};
               });
           });
         } else {
@@ -242,7 +319,7 @@ export const likePost = createAsyncThunk(
             .doc(snapshot.docs[0].id)
             .delete()
             .then(() => {
-              return {liked: false, postId, uid};
+              return {liked: false, postId, uid, page};
             });
         }
       })
@@ -260,7 +337,8 @@ const postSlice = createSlice({
     uploadPercentage: null,
     errors: null,
     uploaded: false,
-    posts: null,
+    postsFollowing: null,
+    postsByLocation: null,
   },
   reducers: {
     resetCreateErrors: (state, action) => {
@@ -293,11 +371,24 @@ const postSlice = createSlice({
     },
     [getFollowingPosts.fulfilled]: (state, action) => {
       state.isFetching = false;
-      state.posts = action.payload;
+      state.postsFollowing = action.payload;
     },
     [getFollowingPosts.rejected]: (state, action) => {
       state.isFetching = false;
       state.errors = action.payload;
+    },
+    [getAllPostsByRegion.pending]: (state, action) => {
+      state.isFetching = true;
+      state.errors = null;
+    },
+    [getAllPostsByRegion.fulfilled]: (state, action) => {
+      state.isFetching = false;
+      state.postsByLocation = action.payload;
+    },
+    [getAllPostsByRegion.rejected]: (state, action) => {
+      state.isFetching = false;
+      state.errors = action.payload;
+      console.log(JSON.stringify(action, null, 2));
     },
     [likePost.pending]: (state, action) => {
       state.isFetching = true;
@@ -306,23 +397,43 @@ const postSlice = createSlice({
     [likePost.fulfilled]: (state, action) => {
       state.isFetching = false;
 
-      const {liked, postId} = action.payload;
+      const {liked, postId, page} = action.payload;
       let indexPostElement;
-      let tempPostElement = state.posts.filter((el, i) => {
-        if (el.docId === postId) indexPostElement = i;
-        return el.docId === postId;
-      })[0];
 
-      if (liked) {
-        const {owner} = action.payload;
-        tempPostElement.likes.push({owner});
-        state.posts[indexPostElement] = tempPostElement;
+      if (page === 'Explore') {
+        let tempPostElement = state.postsFollowing.filter((el, i) => {
+          if (el.docId === postId) indexPostElement = i;
+          return el.docId === postId;
+        })[0];
+
+        if (liked) {
+          const {owner} = action.payload;
+          tempPostElement.likes.push({owner});
+          state.postsFollowing[indexPostElement] = tempPostElement;
+        } else {
+          const {uid} = action.payload;
+          tempPostElement.likes = tempPostElement.likes.filter(
+            (like) => like.owner.uid !== uid,
+          );
+          state.postsFollowing[indexPostElement] = tempPostElement;
+        }
       } else {
-        const {uid} = action.payload;
-        tempPostElement.likes = tempPostElement.likes.filter(
-          (like) => like.owner.uid !== uid,
-        );
-        state.posts[indexPostElement] = tempPostElement;
+        let tempPostElement = state.postsByLocation.filter((el, i) => {
+          if (el.docId === postId) indexPostElement = i;
+          return el.docId === postId;
+        })[0];
+
+        if (liked) {
+          const {owner} = action.payload;
+          tempPostElement.likes.push({owner});
+          state.postsByLocation[indexPostElement] = tempPostElement;
+        } else {
+          const {uid} = action.payload;
+          tempPostElement.likes = tempPostElement.likes.filter(
+            (like) => like.owner.uid !== uid,
+          );
+          state.postsByLocation[indexPostElement] = tempPostElement;
+        }
       }
     },
     [likePost.rejected]: (state, action) => {

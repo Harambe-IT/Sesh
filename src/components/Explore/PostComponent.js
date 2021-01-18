@@ -5,7 +5,7 @@ import {useSelector, useDispatch} from 'react-redux';
 
 import {likePost} from '../../features/posts/postSlice';
 
-const PostComponent = ({post, display}) => {
+const PostComponent = ({post, display, page}) => {
   const Display = display;
 
   const {
@@ -31,7 +31,7 @@ const PostComponent = ({post, display}) => {
   }, [likes]);
 
   const handleLike = () => {
-    dispatch(likePost(post.docId));
+    dispatch(likePost({postId: post.docId, page}));
   };
 
   const handleReaction = () => {
