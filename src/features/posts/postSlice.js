@@ -10,12 +10,12 @@ export const createNewPost = createAsyncThunk(
     let uid = auth().currentUser.uid || null;
     if (!uid) errorObject.generic = "User wasn't authenticated";
     if (!post.fileSource)
-      errorObject.fileSource =
+      errorObject.generic =
         'Provide a picture or video before trying to post anything.';
-    if (!post.description || post.description.trim() === '')
-      errorObject.description = 'Provide a description, please.';
     if (!post.title || post.title.trim() === '')
       errorObject.title = 'Provide a title, please.';
+    if (!post.region)
+      errorObject.generic = 'Enable location to post a new picture/video.';
 
     if (Object.keys(errorObject).length > 0)
       return rejectWithValue(errorObject);
@@ -44,6 +44,7 @@ export const createNewPost = createAsyncThunk(
             owner: firestore().collection('users').doc(uid),
             title: post.title.trim(),
             type: post.fileSource.type?.includes('image') ? 'picture' : 'clip',
+            location: {...post.region},
           });
       })
       .then(() => {

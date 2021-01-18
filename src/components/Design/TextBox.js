@@ -9,9 +9,11 @@ function TextBox({
   placeholderTextColor,
   errors,
 }) {
+  let marginBottom = errors ? 0 : 20;
+
   return (
     <>
-      <View style={[styles.container, style]}>
+      <View style={[styles.container, style, {marginBottom}]}>
         <TextInput
           placeholder={placeholder}
           style={[styles.inputStyle, {color: textColor}]}
