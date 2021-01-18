@@ -1,9 +1,10 @@
 import React from 'react';
 import {Image, StyleSheet, TouchableOpacity} from 'react-native';
 
-const BackArrow = ({navigation, to, style}) => {
+const BackArrow = ({navigation, to, style, extraOnClickHandler}) => {
   const handleClick = () => {
     navigation.navigate(to);
+    extraOnClickHandler();
   };
 
   return (

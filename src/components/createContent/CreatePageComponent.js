@@ -6,7 +6,7 @@ import MapView, {PROVIDER_GOOGLE} from 'react-native-maps';
 import {request, PERMISSIONS} from 'react-native-permissions';
 import GeoLocation from '@react-native-community/geolocation';
 
-import {createNewPost} from '../../features/posts/postSlice';
+import {createNewPost, resetCreateErrors} from '../../features/posts/postSlice';
 import TextBox from '../Design/TextBox';
 import PrimaryButton from '../Design/CupertinoButtonDanger';
 import BackArrow from '../navigation/BackArrow';
@@ -73,6 +73,10 @@ const CreatePageComponent = ({contentFileType, preview, navigation}) => {
     setRegion(region);
   };
 
+  const extraOnClickHandler = () => {
+    dispatch(resetCreateErrors());
+  };
+
   useEffect(() => {
     setTitle('');
     setFileSource(null);
@@ -93,6 +97,7 @@ const CreatePageComponent = ({contentFileType, preview, navigation}) => {
             navigation={navigation}
             to="Create"
             style={styles.backArrow}
+            extraOnClickHandler={extraOnClickHandler}
           />
         </View>
         {/* <View>

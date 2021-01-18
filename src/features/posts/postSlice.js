@@ -262,7 +262,11 @@ const postSlice = createSlice({
     uploaded: false,
     posts: null,
   },
-  reducers: {},
+  reducers: {
+    resetCreateErrors: (state, action) => {
+      state.errors = null;
+    },
+  },
   extraReducers: {
     [createNewPost.pending]: (state, action) => {
       state.isUploading = true;
@@ -328,5 +332,5 @@ const postSlice = createSlice({
   },
 });
 
-export const {resetLiked} = postSlice.actions;
+export const {resetCreateErrors} = postSlice.actions;
 export default postSlice.reducer;
