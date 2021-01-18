@@ -40,7 +40,7 @@ const LoginScreen = ({navigation}) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <ImageBackground
         source={require('../../assets/images/image_InBb.png')}
         resizeMode="contain"
@@ -60,7 +60,7 @@ const LoginScreen = ({navigation}) => {
             <TextBox
               style={styles.EmailTextBox}
               onChangeText={setEmail}
-              placeholder="Username"
+              placeholder="Email"
               placeholderTextColor="white"
               textColor="black"></TextBox>
           </View>
@@ -68,54 +68,59 @@ const LoginScreen = ({navigation}) => {
           <View style={{marginTop: 32}}>
             <PasswordTextBox
               style={styles.PasswordTextBox}
-              onChangeText={setPassword}></PasswordTextBox>
+              onChangeText={setPassword}
+              errors={loginErrors}
+            />
           </View>
         </View>
 
-        <CupertinoButtonDanger
-          style={styles.cupertinoButtonDanger}
-          onPress={handleLogin}
-          text="Login"
-        />
+        <View style={styles.row}>
+          <CupertinoButtonDanger
+            style={styles.cupertinoButtonDanger}
+            onPress={handleLogin}
+            text="Login"
+          />
+          <CupertinoButtonDanger
+            style={styles.cupertinoButtonDanger}
+            onPress={() => navigation.navigate('Register')}
+            text="Register"
+          />
+        </View>
 
         <View style={styles.image5Row}>
           <TouchableOpacity
             activeOpacity={0.5}
-            style={styles.button}
+            style={[styles.socialButton, {left: -3}]}
             onPress={() => handleFacebookLogin()}>
             <Image
-              source={require('../../assets/images/facebook.png')}
+              source={require('../../assets/images/icon_facebook.png')}
               resizeMode="contain"
-              style={styles.image5}></Image>
+              style={styles.socialImage}></Image>
           </TouchableOpacity>
 
           <TouchableOpacity
             activeOpacity={0.5}
-            style={styles.button}
+            style={[styles.socialButton, {left: 100}]}
             onPress={() => handleGoogleLogin()}>
             <Image
-              source={require('../../assets/images/search.png')}
+              source={require('../../assets/images/icon_google.png')}
               resizeMode="contain"
-              style={styles.image4}></Image>
+              style={styles.socialImage}></Image>
           </TouchableOpacity>
         </View>
-        {loginErrors && (
-          <View style={styles.errorMessage}>
-            <Text style={styles.error}>{loginErrors}</Text>
-          </View>
-        )}
       </ImageBackground>
-    </ScrollView>
+    </View>
   );
 };
 
 export default LoginScreen;
 
-const {height, width} = Dimensions.get('screen');
-
 const styles = StyleSheet.create({
   errorMessage: {
     marginLeft: 100,
+  },
+  row: {
+    flexDirection: 'row',
   },
   container: {
     flex: 1,
@@ -126,7 +131,6 @@ const styles = StyleSheet.create({
     marginTop: -247,
     marginLeft: -91,
   },
-  image_imageStyle: {},
   image2: {
     height: 128,
     width: 128,
@@ -165,18 +169,12 @@ const styles = StyleSheet.create({
   },
   cupertinoButtonDanger: {
     height: 40,
-    width: 159,
-    marginTop: 58,
-    marginLeft: 210,
+    width: 100,
+    marginTop: 5,
   },
-  image5: {
+  socialImage: {
     width: 54,
     height: 54,
-  },
-  image4: {
-    width: 54,
-    height: 54,
-    marginLeft: 21,
   },
   image5Row: {
     height: 54,
@@ -184,5 +182,9 @@ const styles = StyleSheet.create({
     marginTop: 55,
     marginLeft: 214,
     marginRight: 213,
+  },
+  socialButton: {
+    position: 'absolute',
+    top: -45,
   },
 });

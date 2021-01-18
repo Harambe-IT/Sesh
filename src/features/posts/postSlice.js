@@ -3,7 +3,7 @@ import storage from '@react-native-firebase/storage';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
-const MAX_DELTA = 100 / 110.4; // Around 100km
+const MAX_DELTA = 100 / 1104; // Around 100km
 
 export const createNewPost = createAsyncThunk(
   'posts/create',
@@ -57,6 +57,186 @@ export const createNewPost = createAsyncThunk(
   },
 );
 
+export const createNewSpot = createAsyncThunk(
+  'posts/createSpot',
+  async (spot, {rejectWithValue}) => {
+    let errorObject = {};
+    let uid = auth().currentUser.uid || null;
+    if (!uid) errorObject.generic = "User wasn't authenticated";
+    if (!spot.fileSource)
+      errorObject.generic =
+        'Provide a picture or video before trying to post anything.';
+    if (!spot.title || spot.title.trim() === '')
+      errorObject.title = 'Provide a title, please.';
+    if (!spot.description || spot.description.trim() === '')
+      errorObject.description = 'Provide a description, please.';
+    if (!spot.region)
+      errorObject.generic = 'Enable location to post a new picture/video.';
+
+    if (Object.keys(errorObject).length > 0)
+      return rejectWithValue(errorObject);
+
+    let spotFileReference = storage().ref(`/${uid}/${spot.fileSource.name}`);
+    let uploadTask = spotFileReference.putFile(spot.fileSource.uri);
+
+    uploadTask.on('state_changed', (taskSnapshot) => {
+      let totalBytes = taskSnapshot.totalBytes;
+      let currentBytesTransferred = taskSnapshot.bytesTransferred;
+      let percentage = Math.floor((currentBytesTransferred / totalBytes) * 100);
+      uploadProgressChanged(percentage);
+    });
+
+    return uploadTask
+      .then(() => {
+        return spotFileReference.getDownloadURL();
+      })
+      .then((downloadURL) => {
+        return firestore()
+          .collection('spots')
+          .add({
+            contentUrl: downloadURL,
+            createdOn: firestore.FieldValue.serverTimestamp(),
+            owner: firestore().collection('users').doc(uid),
+            title: spot.title.trim(),
+            type: 'picture',
+            location: {...spot.region},
+          });
+      })
+      .then(() => {
+        return true;
+      })
+      .catch((err) => {
+        return rejectWithValue(err);
+      });
+  },
+);
+
+export const getPostsByUser = createAsyncThunk(
+  'posts/getByUser',
+  async (uid, {rejectWithValue}) => {
+    let user = firestore().collection('users').doc(uid);
+
+    return firestore()
+      .collection('posts')
+      .where('owner', '==', user)
+      .orderBy('createdOn')
+      .get()
+      .then(async (snapshot) => {
+        let posts = [];
+        let promises = [];
+
+        snapshot.forEach((doc) => {
+          let tempPost = {
+            docId: doc.id,
+            ...doc.data(),
+            createdOn: doc.data().createdOn.seconds,
+          };
+
+          let getOwnerData = doc
+            .data()
+            .owner.get()
+            .then((doc) => {
+              tempPost.owner = {
+                uid: doc.id,
+                ...doc.data(),
+                createdOn: doc.data().createdOn.seconds,
+              };
+            });
+
+          let getLikes = getLikesFrom('posts', tempPost.docId).then((likes) => {
+            tempPost.likes = likes;
+          });
+
+          let getReactions = getReactionsFrom('posts', tempPost.docId).then(
+            (reactions) => {
+              tempPost.reactions = reactions;
+            },
+          );
+
+          let addToList = Promise.all([
+            getOwnerData,
+            getLikes,
+            getReactions,
+          ]).then(() => {
+            posts.push(tempPost);
+          });
+
+          promises.push(addToList);
+        });
+
+        return Promise.all(promises).then(() => {
+          return posts;
+        });
+      })
+      .catch((err) => {
+        return rejectWithValue(err.message);
+      });
+  },
+);
+
+export const getSpotsByUser = createAsyncThunk(
+  'spots/getByUser',
+  async (uid, {rejectWithValue}) => {
+    let user = firestore().collection('users').doc(uid);
+
+    return firestore()
+      .collection('spots')
+      .where('owner', '==', user)
+      .orderBy('createdOn')
+      .get()
+      .then(async (snapshot) => {
+        let spots = [];
+        let promises = [];
+
+        snapshot.forEach((doc) => {
+          let tempSpot = {
+            docId: doc.id,
+            ...doc.data(),
+            createdOn: doc.data().createdOn.seconds,
+          };
+
+          let getOwnerData = doc
+            .data()
+            .owner.get()
+            .then((doc) => {
+              tempSpot.owner = {
+                uid: doc.id,
+                ...doc.data(),
+                createdOn: doc.data().createdOn.seconds,
+              };
+            });
+
+          let getLikes = getLikesFrom('spots', tempSpot.docId).then((likes) => {
+            tempSpot.likes = likes;
+          });
+
+          let getReactions = getReactionsFrom('spots', tempSpot.docId).then(
+            (reactions) => {
+              tempSpot.reactions = reactions;
+            },
+          );
+
+          let addToList = Promise.all([
+            getOwnerData,
+            getLikes,
+            getReactions,
+          ]).then(() => {
+            spots.push(tempSpot);
+          });
+
+          promises.push(addToList);
+        });
+
+        return Promise.all(promises).then(() => {
+          return spots;
+        });
+      })
+      .catch((err) => {
+        return rejectWithValue(err.message);
+      });
+  },
+);
+
 export const getFollowingPosts = createAsyncThunk(
   'posts/getFollowing',
   async (user, {rejectWithValue}) => {
@@ -94,11 +274,11 @@ export const getFollowingPosts = createAsyncThunk(
               };
             });
 
-          let getLikes = getLikesFromPost(tempPost.docId).then((likes) => {
+          let getLikes = getLikesFrom('posts', tempPost.docId).then((likes) => {
             tempPost.likes = likes;
           });
 
-          let getReactions = getReactionsFromPost(tempPost.docId).then(
+          let getReactions = getReactionsFrom('posts', tempPost.docId).then(
             (reactions) => {
               tempPost.reactions = reactions;
             },
@@ -169,11 +349,13 @@ export const getAllPostsByRegion = createAsyncThunk(
                 };
               });
 
-            let getLikes = getLikesFromPost(tempPost.docId).then((likes) => {
-              tempPost.likes = likes;
-            });
+            let getLikes = getLikesFrom('posts', tempPost.docId).then(
+              (likes) => {
+                tempPost.likes = likes;
+              },
+            );
 
-            let getReactions = getReactionsFromPost(tempPost.docId).then(
+            let getReactions = getReactionsFrom('posts', tempPost.docId).then(
               (reactions) => {
                 tempPost.reactions = reactions;
               },
@@ -201,10 +383,88 @@ export const getAllPostsByRegion = createAsyncThunk(
   },
 );
 
-const getLikesFromPost = async (postId) => {
+export const getAllSpotsByRegion = createAsyncThunk(
+  'posts/getAllSpotsByRegion',
+  async (region, {rejectWithValue}) => {
+    let latitudeDelta = region.latitudeDelta;
+    let longitudeDelta = region.longitudeDelta;
+    if (latitudeDelta > MAX_DELTA) latitudeDelta = MAX_DELTA;
+    if (longitudeDelta > MAX_DELTA) longitudeDelta = MAX_DELTA;
+
+    return firestore()
+      .collection('spots')
+      .where('location.latitude', '>=', region.latitude - latitudeDelta)
+      .where('location.latitude', '<=', region.latitude + latitudeDelta)
+      .get()
+      .then(async (snapshot) => {
+        let spots = [];
+        let promises = [];
+
+        console.log(snapshot.size, 'spots found');
+        snapshot.forEach((doc) => {
+          let tempPost = {
+            docId: doc.id,
+            ...doc.data(),
+            createdOn: doc.data().createdOn.seconds,
+            location: {
+              longitude: doc.data().location.longitude,
+              latitude: doc.data().location.latitude,
+            },
+          };
+
+          if (
+            tempPost.location.longitude >= region.longitude - longitudeDelta &&
+            tempPost.location.longitude <= region.longitude + longitudeDelta
+          ) {
+            let getOwnerData = doc
+              .data()
+              .owner.get()
+              .then((doc) => {
+                tempPost.owner = {
+                  uid: doc.id,
+                  ...doc.data(),
+                  createdOn: doc.data().createdOn.seconds,
+                };
+              });
+
+            let getLikes = getLikesFrom('spots', tempPost.docId).then(
+              (likes) => {
+                tempPost.likes = likes;
+              },
+            );
+
+            let getReactions = getReactionsFrom('spots', tempPost.docId).then(
+              (reactions) => {
+                tempPost.reactions = reactions;
+              },
+            );
+
+            let addToList = Promise.all([
+              getOwnerData,
+              getLikes,
+              getReactions,
+            ]).then(() => {
+              spots.push(tempPost);
+            });
+
+            promises.push(addToList);
+          }
+        });
+
+        return Promise.all(promises).then(() => {
+          return spots;
+        });
+      })
+      .catch((err) => {
+        return rejectWithValue(err.message);
+      });
+  },
+);
+
+const getLikesFrom = async (collection, document) => {
   return firestore()
-    .collection('posts')
-    .doc(postId)
+    .collection(collection)
+    .doc(document)
     .collection('likes')
     .get()
     .then(async (snapshot) => {
@@ -238,10 +498,10 @@ const getLikesFromPost = async (postId) => {
     });
 };
 
-const getReactionsFromPost = async (postId) => {
+const getReactionsFrom = async (collection, document) => {
   return firestore()
-    .collection('posts')
-    .doc(postId)
+    .collection(collection)
+    .doc(document)
     .collection('reactions')
     .get()
     .then(async (snapshot) => {
@@ -339,6 +599,9 @@ const postSlice = createSlice({
     uploaded: false,
     postsFollowing: null,
     postsByLocation: null,
+    spotsByLocation: null,
+    postsByUser: null,
+    spotsByUser: null,
   },
   reducers: {
     resetCreateErrors: (state, action) => {
@@ -354,6 +617,18 @@ const postSlice = createSlice({
       state.errors = action.payload;
     },
     [createNewPost.fulfilled]: (state, action) => {
+      state.isUploading = false;
+      state.uploadPercentage = null;
+      state.uploaded = action.payload;
+    },
+    [createNewSpot.pending]: (state, action) => {
+      state.isUploading = true;
+    },
+    [createNewSpot.rejected]: (state, action) => {
+      state.isUploading = false;
+      state.errors = action.payload;
+    },
+    [createNewSpot.fulfilled]: (state, action) => {
       state.isUploading = false;
       state.uploadPercentage = null;
       state.uploaded = action.payload;
@@ -377,6 +652,32 @@ const postSlice = createSlice({
       state.isFetching = false;
       state.errors = action.payload;
     },
+    [getPostsByUser.pending]: (state, action) => {
+      state.isFetching = true;
+      state.errors = null;
+      state.uploaded = false;
+    },
+    [getPostsByUser.fulfilled]: (state, action) => {
+      state.isFetching = false;
+      state.postsByUser = action.payload;
+    },
+    [getPostsByUser.rejected]: (state, action) => {
+      state.isFetching = false;
+      state.errors = action.payload;
+    },
+    [getSpotsByUser.pending]: (state, action) => {
+      state.isFetching = true;
+      state.errors = null;
+      state.uploaded = false;
+    },
+    [getSpotsByUser.fulfilled]: (state, action) => {
+      state.isFetching = false;
+      state.spotsByUser = action.payload;
+    },
+    [getSpotsByUser.rejected]: (state, action) => {
+      state.isFetching = false;
+      state.errors = action.payload;
+    },
     [getAllPostsByRegion.pending]: (state, action) => {
       state.isFetching = true;
       state.errors = null;
@@ -388,7 +689,18 @@ const postSlice = createSlice({
     [getAllPostsByRegion.rejected]: (state, action) => {
       state.isFetching = false;
       state.errors = action.payload;
-      console.log(JSON.stringify(action, null, 2));
+    },
+    [getAllSpotsByRegion.pending]: (state, action) => {
+      state.isFetching = true;
+      state.errors = null;
+    },
+    [getAllSpotsByRegion.fulfilled]: (state, action) => {
+      state.isFetching = false;
+      state.spotsByLocation = action.payload;
+    },
+    [getAllSpotsByRegion.rejected]: (state, action) => {
+      state.isFetching = false;
+      state.errors = action.payload;
     },
     [likePost.pending]: (state, action) => {
       state.isFetching = true;
