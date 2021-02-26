@@ -45,10 +45,7 @@ const PostComponent = ({post, display, page}) => {
           style={styles.tinyProfilePicture}
           source={{uri: `https://picsum.photos/200/300?random=${post.docId}`}}
         />
-        <Text
-          style={
-            styles.ownerName
-          }>{`${owner.firstName} ${owner.lastName}`}</Text>
+        <Text style={styles.ownerName}>{`${owner.username}`}</Text>
         <Text style={styles.textRight}>{type}</Text>
       </View>
 

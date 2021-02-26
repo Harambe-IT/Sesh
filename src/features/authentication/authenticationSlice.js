@@ -110,11 +110,11 @@ export const signUp = createAsyncThunk(
           .collection('users')
           .doc(result.user.uid)
           .set({
-            initials: `${user.firstName[0]}${user.lastName[0]}`.toUpperCase(),
             createdOn: firestore.FieldValue.serverTimestamp(),
+            username: user.username,
           });
 
-        return Promise.all(promise1, promise2);
+        return Promise.all([promise1, promise2]);
       })
       .catch((err) => {
         return rejectWithValue(err.message);
@@ -151,11 +151,8 @@ export const authChanged = createAsyncThunk(
             `User with id '${user.uid}' didn't exist in the firestore.`,
           );
         userData.uid = doc.id;
-        userData.firstName = doc.data().firstName;
-        userData.lastName = doc.data().lastName;
-        userData.initials = doc.data().initials;
         userData.createdOn = doc.data().seconds;
-        userData.username = user.displayName;
+        userData.username = doc.data().username;
       });
 
     let userFollowingTask = firestore()

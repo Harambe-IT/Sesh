@@ -29,11 +29,7 @@ const TabScreens = () => {
       <Tab.Screen name="Discover" component={DiscoverScreen} />
       <Tab.Screen name="Create" component={CreationNavigationStack} />
       <Tab.Screen name="Activity" component={ActivityScreen} />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        initialParams={{uid: auth().currentUser.uid}}
-      />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 };

@@ -27,9 +27,7 @@ const MapComponent = ({
                   <View style={styles.markerContainer}>
                     <Text style={styles.markerTitle}>{title}</Text>
                     <Text
-                      style={
-                        styles.markerOwner
-                      }>{`By ${owner.firstName} ${owner.lastName}`}</Text>
+                      style={styles.markerOwner}>{`By ${owner.username}`}</Text>
                     {type === 'clip' ? (
                       <Text>The video is available in the list view</Text>
                     ) : (

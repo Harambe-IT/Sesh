@@ -51,20 +51,17 @@ const ProfileScreen = ({route}) => {
               )}
             </View>
             <View style={styles.column}>
-              <Text
-                style={
-                  styles.userName
-                }>{`${user.firstName} ${user.lastName}`}</Text>
+              <Text style={styles.userName}>{user.username}</Text>
             </View>
           </View>
           <View style={styles.row}>
             <View style={styles.column}>
               <Text>{`${spotsByUser.length}`}</Text>
-              <Text>{`${Spots}`}</Text>
+              <Text>{'Spots'}</Text>
             </View>
             <View style={styles.column}>
               <Text>{`${postsByUser.length}`}</Text>
-              <Text>{`${Posts}`}</Text>
+              <Text>{'Posts'}</Text>
             </View>
           </View>
           <ScrollView

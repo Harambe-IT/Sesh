@@ -9,10 +9,15 @@ export const getUserProfile = createAsyncThunk(
       .doc(uid)
       .get()
       .then((doc) => {
+        console.log({
+          uid: doc.id,
+          ...doc.data(),
+          createdOn: doc.data()?.createdOn.seconds,
+        });
         return {
           uid: doc.id,
           ...doc.data(),
-          createdOn: doc.data().createdOn.seconds,
+          createdOn: doc.data()?.createdOn.seconds,
         };
       })
       .catch((err) => {
