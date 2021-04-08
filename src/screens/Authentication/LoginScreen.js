@@ -1,26 +1,27 @@
-import React from 'react';
+import React, {useState, memo, useEffect} from "react";
 import {
+  ImageBackground,
+  StyleSheet,
+  Image,
   View,
   Text,
-  StyleSheet,
+  KeyboardAvoidingView,
+  Dimensions,
   TouchableOpacity,
-  ImageBackground,
-  Image,
-} from 'react-native';
-
-import {useSelector, useDispatch} from 'react-redux';
+} from "react-native";
+import {useDispatch, useSelector} from "react-redux";
 import {
   signIn,
   signInFacebook,
   signInGoogle,
-} from '../../features/authentication/authenticationSlice';
+} from "../../features/authentication/authenticationSlice";
+import {Button, Error, TextBox} from "../../components/Common";
 
-import TextBox from '../../components/Design/TextBox';
-import CupertinoButtonDanger from '../../components/Design/CupertinoButtonDanger';
+const windowHeight = Dimensions.get("window").height;
 
 const LoginScreen = ({navigation}) => {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const {loginErrors} = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
@@ -37,137 +38,150 @@ const LoginScreen = ({navigation}) => {
   };
 
   return (
-    <View style={styles.container}>
-      <ImageBackground
-        source={require('../../assets/images/image_InBb.png')}
-        style={styles.backgroundImage}>
-        <View style={styles.row}>
-          <Image
-            source={require('../../assets/images/image_iWBB.png')}
-            style={styles.logoImage}
-          />
+    <ImageBackground
+      source={require("../../assets/images/image_InBb.png")}
+      style={{minHeight: windowHeight}}>
+      <KeyboardAvoidingView style={styles.container}>
+        <Image
+          style={styles.headerImage}
+          source={require("../../assets/images/image_iWBB.png")}
+        />
+        <View style={styles.catchPhraseContainer}>
+          <Text style={[styles.catchPhrase, {color: "rgb(255,255,255)"}]}>
+            Sesh {"\n"}With
+          </Text>
+          <Text style={[styles.catchPhrase, {color: "rgb(255,0,31)"}]}>
+            everywhere.{"\n"}everyone.
+          </Text>
         </View>
-        <View style={[styles.row, {marginTop: -50}]}>
-          <Text style={styles.catchPhraseWhite}>Sesh {'\n'}With</Text>
-          <Text style={styles.catchPhraseRed}>everywhere.{'\n'}everyone.</Text>
-        </View>
+        {loginErrors && <Error error={loginErrors} />}
         <TextBox
-          style={styles.textBox}
-          onChangeText={setEmail}
           placeholder="Email"
-          placeholderTextColor="white"
-          textColor="white"
-          isPassword={false}
+          placeholderTextColor="rgba(250, 250, 250, 0.75)"
+          onChangeText={setEmail}
+          style={styles.textBox}
+          keyboardType="email-address"
         />
         <TextBox
-          style={styles.textBox}
-          onChangeText={setPassword}
           placeholder="Password"
-          placeholderTextColor="white"
-          textColor="white"
-          isPassword={true}
-          errors={loginErrors}
+          placeholderTextColor="rgba(250, 250, 250, 0.75)"
+          onChangeText={setPassword}
+          style={styles.textBox}
+          password
         />
-
-        <View style={styles.row}>
-          <CupertinoButtonDanger
-            style={styles.cupertinoButtonDanger}
-            onPress={handleLogin}
-            text="Login"
-          />
-        </View>
-
+        <Button style={styles.loginButton} onPress={handleLogin} text="Login" />
         <View style={styles.row}>
           <TouchableOpacity
             activeOpacity={0.5}
-            style={[styles.socialButton, {marginRight: 50, marginLeft: 'auto'}]}
+            style={styles.socialButton}
             onPress={handleFacebookLogin}>
             <Image
-              source={require('../../assets/images/icon_facebook.png')}
-              style={styles.socialImage}
+              source={require("../../assets/images/icon_facebook.png")}
+              style={[styles.socialImage, {marginRight: 40}]}
             />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            activeOpacity={0.5}
-            style={[styles.socialButton, {marginLeft: 50, marginRight: 'auto'}]}
-            onPress={handleGoogleLogin}>
+          <TouchableOpacity activeOpacity={0.5} onPress={handleGoogleLogin}>
             <Image
-              source={require('../../assets/images/icon_google.png')}
-              style={styles.socialImage}
+              source={require("../../assets/images/icon_google.png")}
+              style={[styles.socialImage, {marginLeft: 40}]}
             />
           </TouchableOpacity>
         </View>
         <View style={styles.row}>
           <TouchableOpacity
-            style={{marginLeft: 'auto', marginRight: 25}}
-            onPress={() => navigation.navigate('Reset Password')}>
+            onPress={() => navigation.navigate("Reset Password")}>
             <Text style={styles.navigationalLinkText}>Reset Password</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={{marginRight: 'auto', marginLeft: 45}}
-            onPress={() => navigation.navigate('Register')}>
+          <TouchableOpacity onPress={() => navigation.navigate("Register")}>
             <Text style={styles.navigationalLinkText}>Register</Text>
           </TouchableOpacity>
         </View>
-      </ImageBackground>
-    </View>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 };
 
-export default LoginScreen;
+export default memo(LoginScreen);
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    alignItems: "center",
+    textAlign: "center",
   },
-  backgroundImage: {
-    ...StyleSheet.absoluteFillObject,
+  headerImage: {
+    marginTop: 15,
+    marginBottom: 15,
   },
-  row: {
-    flexDirection: 'row',
-    paddingVertical: 10,
+  catchPhraseContainer: {
+    flexDirection: "row",
   },
-  logoImage: {
-    height: 150,
-    width: 100,
-    marginLeft: 'auto',
-    marginRight: 'auto',
-  },
-  catchPhraseWhite: {
-    fontFamily: 'roboto-700',
-    color: 'rgba(255,255,255,1)',
+  catchPhrase: {
+    fontFamily: "roboto-700",
     fontSize: 33,
-    marginLeft: 'auto',
-  },
-  catchPhraseRed: {
-    fontFamily: 'roboto-700',
-    color: 'rgba(255,0,31,1)',
-    fontSize: 33,
-    marginRight: 'auto',
   },
   textBox: {
-    height: 50,
+    borderBottomWidth: 3,
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    borderColor: "#fafafa",
+    color: "#ffffff",
+    fontWeight: "bold",
+    marginTop: 15,
+    paddingTop: 0,
+    paddingBottom: 0,
     width: 200,
-    marginLeft: 'auto',
-    marginRight: 'auto',
   },
-  cupertinoButtonDanger: {
-    height: 40,
-    width: 203,
-    marginTop: 5,
-    marginRight: 'auto',
-    marginLeft: 'auto',
+  loginButton: {
+    marginTop: 25,
+    width: 200,
+  },
+  row: {
+    flexDirection: "row",
+    paddingVertical: 25,
   },
   socialImage: {
-    width: 54,
-    height: 54,
+    width: 60,
+    height: 60,
   },
-  resetPasswordContainer: {
-    marginLeft: 'auto',
-    marginRight: 'auto',
-  },
-  resetPasswordText: {
-    textDecorationLine: 'underline',
+  navigationalLinkText: {
+    marginHorizontal: 25,
+    textDecorationLine: "underline",
   },
 });
+
+// const styles = StyleSheet.create({
+//   cupertinoButtonDanger: {
+//     height: 40,
+//     width: 203,
+//     marginTop: 5,
+//     marginRight: "auto",
+//     marginLeft: "auto",
+//   },
+//   socialImage: {
+//     width: 54,
+//     height: 54,
+//   },
+//   resetPasswordContainer: {
+//     marginLeft: "auto",
+//     marginRight: "auto",
+//   },
+//   resetPasswordText: {
+//     textDecorationLine: "underline",
+//   },
+// });
+
+//
+//     <View style={styles.row}>
+//       <TouchableOpacity
+//         style={{marginLeft: "auto", marginRight: 25}}
+//         onPress={() => navigation.navigate("Reset Password")}>
+//         <Text style={styles.navigationalLinkText}>Reset Password</Text>
+//       </TouchableOpacity>
+//       <TouchableOpacity
+//         style={{marginRight: "auto", marginLeft: 45}}
+//         onPress={() => navigation.navigate("Register")}>
+//         <Text style={styles.navigationalLinkText}>Register</Text>
+//       </TouchableOpacity>
+//     </View>
+//   </View>
+// </ImageBackground>

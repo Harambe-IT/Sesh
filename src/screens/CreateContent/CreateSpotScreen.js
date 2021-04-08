@@ -1,19 +1,19 @@
-import React, {useState, useEffect} from 'react';
-import {Text, View, StyleSheet, Image, TouchableOpacity} from 'react-native';
-import {launchCamera} from 'react-native-image-picker';
-import {useDispatch, useSelector} from 'react-redux';
-import MapView, {PROVIDER_GOOGLE} from 'react-native-maps';
-import {request, PERMISSIONS} from 'react-native-permissions';
-import GeoLocation from '@react-native-community/geolocation';
+import React, {useState, useEffect} from "react";
+import {Text, View, StyleSheet, Image, TouchableOpacity} from "react-native";
+import {launchCamera} from "react-native-image-picker";
+import {useDispatch, useSelector} from "react-redux";
+import MapView, {PROVIDER_GOOGLE} from "react-native-maps";
+import {request, PERMISSIONS} from "react-native-permissions";
+import GeoLocation from "@react-native-community/geolocation";
 
-import {createNewSpot, resetCreateErrors} from '../../features/posts/postSlice';
-import TextBox from '../../components/Design/TextBox';
-import PrimaryButton from '../../components/Design/CupertinoButtonDanger';
-import BackArrow from '../../components/navigation/BackArrow';
+import {createNewSpot, resetCreateErrors} from "../../features/posts/postSlice";
+import TextBox from "../../components/Common/TextBox";
+import Button from "../../components/Common/Button";
+import BackArrow from "../../components/navigation/BackArrow";
 
 const CreateSpotScreen = ({navigation}) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [fileSource, setFileSource] = useState(null);
   const [initialPosition, setInitialPosition] = useState(null);
   const [region, setRegion] = useState(null);
@@ -50,7 +50,7 @@ const CreateSpotScreen = ({navigation}) => {
   const requestLocationPermission = async () => {
     let response = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
 
-    if (response === 'granted') {
+    if (response === "granted") {
       locateCurrentPosition();
     }
   };
@@ -80,12 +80,12 @@ const CreateSpotScreen = ({navigation}) => {
   };
 
   useEffect(() => {
-    setTitle('');
-    setDescription('');
+    setTitle("");
+    setDescription("");
     setFileSource(null);
     setInitialPosition(null);
     setRegion(null);
-    uploaded && navigation.navigate('Explore');
+    uploaded && navigation.navigate("Explore");
   }, [uploaded]);
 
   useEffect(() => {
@@ -108,13 +108,13 @@ const CreateSpotScreen = ({navigation}) => {
         </View> */}
         <View>
           <TouchableOpacity
-            onPress={() => launchCamera({mediaType: 'Image'}, cameraCallback)}>
+            onPress={() => launchCamera({mediaType: "Image"}, cameraCallback)}>
             <Image
               style={styles.postFile}
               source={
                 fileSource
                   ? {uri: fileSource.uri}
-                  : require('../../assets/images/createContent/icon_pictures.png')
+                  : require("../../assets/images/createContent/icon_pictures.png")
               }
             />
           </TouchableOpacity>
@@ -143,12 +143,12 @@ const CreateSpotScreen = ({navigation}) => {
           <View style={styles.markerContainer}>
             <Image
               style={styles.markerImage}
-              source={require('../../assets/images/createContent/icon_marker.png')}
+              source={require("../../assets/images/createContent/icon_marker.png")}
             />
           </View>
         </View>
 
-        <PrimaryButton
+        <Button
           onPress={handleUpload}
           disabled={isUploading}
           text="Post"
@@ -170,8 +170,8 @@ export default CreateSpotScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 10,
   },
   postFile: {
@@ -182,9 +182,9 @@ const styles = StyleSheet.create({
   uploadButton: {
     paddingVertical: 10,
     borderRadius: 25,
-    position: 'absolute',
-    top: '100%',
-    left: '100%',
+    position: "absolute",
+    top: "100%",
+    left: "100%",
     marginLeft: -50,
     marginTop: -30,
   },
@@ -200,14 +200,14 @@ const styles = StyleSheet.create({
     width: 48,
   },
   markerContainer: {
-    top: '50%',
-    left: '50%',
+    top: "50%",
+    left: "50%",
     marginLeft: -24,
     marginTop: -48,
-    position: 'absolute',
+    position: "absolute",
   },
   backArrow: {
-    position: 'absolute',
+    position: "absolute",
     left: -200,
   },
 });

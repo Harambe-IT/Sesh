@@ -1,18 +1,18 @@
-import React, {useState, useEffect} from 'react';
-import {Text, View, StyleSheet, Image, TouchableOpacity} from 'react-native';
-import {launchCamera} from 'react-native-image-picker';
-import {useDispatch, useSelector} from 'react-redux';
-import MapView, {PROVIDER_GOOGLE} from 'react-native-maps';
-import {request, PERMISSIONS} from 'react-native-permissions';
-import GeoLocation from '@react-native-community/geolocation';
+import React, {useState, useEffect} from "react";
+import {Text, View, StyleSheet, Image, TouchableOpacity} from "react-native";
+import {launchCamera} from "react-native-image-picker";
+import {useDispatch, useSelector} from "react-redux";
+import MapView, {PROVIDER_GOOGLE} from "react-native-maps";
+import {request, PERMISSIONS} from "react-native-permissions";
+import GeoLocation from "@react-native-community/geolocation";
 
-import {createNewPost, resetCreateErrors} from '../../features/posts/postSlice';
-import TextBox from '../Design/TextBox';
-import PrimaryButton from '../Design/CupertinoButtonDanger';
-import BackArrow from '../navigation/BackArrow';
+import {createNewPost, resetCreateErrors} from "../../features/posts/postSlice";
+import TextBox from "../Common/TextBox";
+import Button from "../Common/Button";
+import BackArrow from "../navigation/BackArrow";
 
 const CreatePageComponent = ({contentFileType, preview, navigation}) => {
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState("");
   const [fileSource, setFileSource] = useState(null);
   const [initialPosition, setInitialPosition] = useState(null);
   const [region, setRegion] = useState(null);
@@ -48,7 +48,7 @@ const CreatePageComponent = ({contentFileType, preview, navigation}) => {
   const requestLocationPermission = async () => {
     let response = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
 
-    if (response === 'granted') {
+    if (response === "granted") {
       locateCurrentPosition();
     }
   };
@@ -78,11 +78,11 @@ const CreatePageComponent = ({contentFileType, preview, navigation}) => {
   };
 
   useEffect(() => {
-    setTitle('');
+    setTitle("");
     setFileSource(null);
     setInitialPosition(null);
     setRegion(null);
-    uploaded && navigation.navigate('Explore');
+    uploaded && navigation.navigate("Explore");
   }, [uploaded]);
 
   useEffect(() => {
@@ -128,12 +128,12 @@ const CreatePageComponent = ({contentFileType, preview, navigation}) => {
           <View style={styles.markerContainer}>
             <Image
               style={styles.markerImage}
-              source={require('../../assets/images/createContent/icon_marker.png')}
+              source={require("../../assets/images/createContent/icon_marker.png")}
             />
           </View>
         </View>
 
-        <PrimaryButton
+        <Button
           onPress={handleUpload}
           disabled={isUploading}
           text="Post"
@@ -155,8 +155,8 @@ export default CreatePageComponent;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 10,
   },
   postFile: {
@@ -167,9 +167,9 @@ const styles = StyleSheet.create({
   uploadButton: {
     paddingVertical: 10,
     borderRadius: 25,
-    position: 'absolute',
-    top: '100%',
-    left: '100%',
+    position: "absolute",
+    top: "100%",
+    left: "100%",
     marginLeft: -50,
     marginTop: -30,
   },
@@ -185,14 +185,14 @@ const styles = StyleSheet.create({
     width: 48,
   },
   markerContainer: {
-    top: '50%',
-    left: '50%',
+    top: "50%",
+    left: "50%",
     marginLeft: -24,
     marginTop: -48,
-    position: 'absolute',
+    position: "absolute",
   },
   backArrow: {
-    position: 'absolute',
+    position: "absolute",
     left: -200,
   },
 });
