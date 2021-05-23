@@ -1,16 +1,14 @@
-import React from "react";
-import {getFocusedRouteNameFromRoute} from "@react-navigation/native";
 import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
+import {getFocusedRouteNameFromRoute} from "@react-navigation/native";
 import {createStackNavigator} from "@react-navigation/stack";
-import auth from "@react-native-firebase/auth";
-
-import ExploreScreen from "../../screens/Explore/ExploreScreen";
-import DiscoverScreen from "../../screens/Discover/DiscoverScreen";
-import ActivityScreen from "../../screens/Activity/ActivityScreen";
-import ProfileScreen from "../../screens/Profile/ProfileScreen";
-import CreationNavigationStack from "../../screens/CreateContent/CreationNavigationScreen";
-import Conversations from "../../screens/Messages/Conversations";
+import React from "react";
 import TabBarIcon from "../../components/navigation/TabBarIcon";
+import ActivityScreen from "../../screens/Activity/ActivityScreen";
+import CreationNavigationStack from "../../screens/CreateContent/CreationNavigationScreen";
+import DiscoverScreen from "../../screens/Discover/DiscoverScreen";
+import ExploreScreen from "../../screens/Explore/ExploreScreen";
+import Conversations from "../../screens/Messages/Conversations";
+import ProfileScreen from "../../screens/Profile/ProfileScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();

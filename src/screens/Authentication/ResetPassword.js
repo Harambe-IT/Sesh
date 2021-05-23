@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, {memo} from "react";
 import {
   Dimensions,
   Image,
@@ -15,7 +15,7 @@ import styles from "./AuthenticationStyles";
 
 const windowHeight = Dimensions.get("window").height;
 
-const RegisterScreen = ({navigation}) => {
+const ResetPassword = ({navigation}) => {
   const [email, setEmail] = React.useState("");
   const dispatch = useDispatch();
   const {resetPasswordErrors, resetPasswordConfirmation} = useSelector(
@@ -79,4 +79,4 @@ const RegisterScreen = ({navigation}) => {
   );
 };
 
-export default RegisterScreen;
+export default memo(ResetPassword);
