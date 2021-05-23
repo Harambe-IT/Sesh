@@ -1,5 +1,5 @@
 import React, {memo} from "react";
-import {StyleSheet, View, TextInput, Text} from "react-native";
+import {StyleSheet, TextInput} from "react-native";
 
 const TextBox = ({
   onChangeText,

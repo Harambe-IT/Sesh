@@ -95,8 +95,9 @@ export const signUp = createAsyncThunk(
       user.email.trim() === "" ||
       user.password.trim() === "" ||
       user.username.trim() === ""
-    )
+    ) {
       return rejectWithValue("Please fill in a password, email and username.");
+    }
     return auth()
       .createUserWithEmailAndPassword(user.email, user.password)
       .then((result) => {
@@ -123,6 +124,10 @@ export const signUp = createAsyncThunk(
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async (email, {rejectWithValue}) => {
+    if (email.trim() === "") {
+      return rejectWithValue("Please fill in an email.");
+    }
+
     return auth()
       .sendPasswordResetEmail(email)
       .then(() => {
@@ -267,6 +272,24 @@ const authSlice = createSlice({
     },
     [authChanged.rejected]: (state, action) => {
       state.isFetching = false;
+    },
+    [resetPassword.pending]: (state, action) => {
+      state.isFetching = true;
+      state.resetPasswordErrors = null;
+      state.resetPasswordConfirmation = null;
+    },
+    [resetPassword.fulfilled]: (state, action) => {
+      state.isFetching = false;
+      state.resetPasswordConfirmation = action.payload;
+    },
+    [resetPassword.rejected]: (state, action) => {
+      state.isFetching = false;
+      if (action.payload.includes("auth/invalid-email"))
+        state.resetPasswordErrors =
+          "The email address is not valid.\nProvide a valid email address when trying to reset your password.";
+      else if (action.payload.includes("auth/user-not-found"))
+        state.resetPasswordErrors = "No user found with that email address.";
+      else state.resetPasswordErrors = action.payload;
     },
   },
 });

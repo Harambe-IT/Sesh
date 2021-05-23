@@ -18,15 +18,15 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "#FF3B30",
     justifyContent: "center",
-    alignItems: "center",
     flexDirection: "row",
+    paddingVertical: "2%",
     borderRadius: 7,
   },
   text: {
     color: "#fff",
-    fontSize: 17,
+    fontSize: 25,
     fontWeight: "bold",
-    lineHeight: 35,
-    paddingHorizontal: 35,
+    textAlign: "center",
+    fontFamily: "",
   },
 });

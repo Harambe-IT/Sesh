@@ -1,7 +1,6 @@
-import React, {useState, memo, useEffect} from "react";
+import React, {useState, memo} from "react";
 import {
   ImageBackground,
-  StyleSheet,
   Image,
   View,
   Text,
@@ -15,7 +14,8 @@ import {
   signInFacebook,
   signInGoogle,
 } from "../../features/authentication/authenticationSlice";
-import {Button, Error, TextBox} from "../../components/Common";
+import {Button, Feedback, TextBox} from "../../components/Common";
+import styles from "./AuthenticationStyles";
 
 const windowHeight = Dimensions.get("window").height;
 
@@ -41,7 +41,8 @@ const LoginScreen = ({navigation}) => {
     <ImageBackground
       source={require("../../assets/images/image_InBb.png")}
       style={{minHeight: windowHeight}}>
-      <KeyboardAvoidingView style={styles.container}>
+      <KeyboardAvoidingView
+        style={[styles.container, {maxHeight: windowHeight}]}>
         <Image
           style={styles.headerImage}
           source={require("../../assets/images/image_iWBB.png")}
@@ -54,7 +55,7 @@ const LoginScreen = ({navigation}) => {
             everywhere.{"\n"}everyone.
           </Text>
         </View>
-        {loginErrors && <Error error={loginErrors} />}
+        {loginErrors && <Feedback error={loginErrors} />}
         <TextBox
           placeholder="Email"
           placeholderTextColor="rgba(250, 250, 250, 0.75)"
@@ -70,25 +71,37 @@ const LoginScreen = ({navigation}) => {
           password
         />
         <Button style={styles.loginButton} onPress={handleLogin} text="Login" />
-        <View style={styles.row}>
+        <View
+          style={[
+            styles.row,
+            {
+              justifyContent: "space-between",
+              marginTop: "20%",
+            },
+          ]}>
           <TouchableOpacity
             activeOpacity={0.5}
             style={styles.socialButton}
-            onPress={handleFacebookLogin}>
-            <Image
-              source={require("../../assets/images/icon_facebook.png")}
-              style={[styles.socialImage, {marginRight: 40}]}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity activeOpacity={0.5} onPress={handleGoogleLogin}>
+            onPress={handleGoogleLogin}>
             <Image
               source={require("../../assets/images/icon_google.png")}
-              style={[styles.socialImage, {marginLeft: 40}]}
+              style={styles.socialImage}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity activeOpacity={0.5} onPress={handleFacebookLogin}>
+            <Image
+              source={require("../../assets/images/icon_facebook.png")}
+              style={styles.socialImage}
             />
           </TouchableOpacity>
         </View>
-        <View style={styles.row}>
+        <View
+          style={[
+            styles.row,
+            {
+              justifyContent: "space-between",
+            },
+          ]}>
           <TouchableOpacity
             onPress={() => navigation.navigate("Reset Password")}>
             <Text style={styles.navigationalLinkText}>Reset Password</Text>
@@ -103,85 +116,3 @@ const LoginScreen = ({navigation}) => {
 };
 
 export default memo(LoginScreen);
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    textAlign: "center",
-  },
-  headerImage: {
-    marginTop: 15,
-    marginBottom: 15,
-  },
-  catchPhraseContainer: {
-    flexDirection: "row",
-  },
-  catchPhrase: {
-    fontFamily: "roboto-700",
-    fontSize: 33,
-  },
-  textBox: {
-    borderBottomWidth: 3,
-    backgroundColor: "rgba(0, 0, 0, 0.1)",
-    borderColor: "#fafafa",
-    color: "#ffffff",
-    fontWeight: "bold",
-    marginTop: 15,
-    paddingTop: 0,
-    paddingBottom: 0,
-    width: 200,
-  },
-  loginButton: {
-    marginTop: 25,
-    width: 200,
-  },
-  row: {
-    flexDirection: "row",
-    paddingVertical: 25,
-  },
-  socialImage: {
-    width: 60,
-    height: 60,
-  },
-  navigationalLinkText: {
-    marginHorizontal: 25,
-    textDecorationLine: "underline",
-  },
-});
-
-// const styles = StyleSheet.create({
-//   cupertinoButtonDanger: {
-//     height: 40,
-//     width: 203,
-//     marginTop: 5,
-//     marginRight: "auto",
-//     marginLeft: "auto",
-//   },
-//   socialImage: {
-//     width: 54,
-//     height: 54,
-//   },
-//   resetPasswordContainer: {
-//     marginLeft: "auto",
-//     marginRight: "auto",
-//   },
-//   resetPasswordText: {
-//     textDecorationLine: "underline",
-//   },
-// });
-
-//
-//     <View style={styles.row}>
-//       <TouchableOpacity
-//         style={{marginLeft: "auto", marginRight: 25}}
-//         onPress={() => navigation.navigate("Reset Password")}>
-//         <Text style={styles.navigationalLinkText}>Reset Password</Text>
-//       </TouchableOpacity>
-//       <TouchableOpacity
-//         style={{marginRight: "auto", marginLeft: 45}}
-//         onPress={() => navigation.navigate("Register")}>
-//         <Text style={styles.navigationalLinkText}>Register</Text>
-//       </TouchableOpacity>
-//     </View>
-//   </View>
-// </ImageBackground>
