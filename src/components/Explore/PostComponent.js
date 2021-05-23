@@ -1,9 +1,10 @@
-import React, {useState, useEffect} from 'react';
-import {Text, View, Image, StyleSheet, TouchableOpacity} from 'react-native';
-import auth from '@react-native-firebase/auth';
-import {useSelector, useDispatch} from 'react-redux';
+import React, {useState, useEffect} from "react";
+import {Text, View, Image, StyleSheet, TouchableOpacity} from "react-native";
+import auth from "@react-native-firebase/auth";
+import {useSelector, useDispatch} from "react-redux";
+import {useNavigation} from "@react-navigation/native";
 
-import {likePost} from '../../features/posts/postSlice';
+import {likePost} from "../../features/posts/postSlice";
 
 const PostComponent = ({post, display, page}) => {
   const Display = display;
@@ -21,6 +22,7 @@ const PostComponent = ({post, display, page}) => {
   const [likedPost, setLikedPost] = useState(false);
   const dispatch = useDispatch();
   const {isFetching, errors} = useSelector((state) => state.posts);
+  const navigation = useNavigation();
 
   useEffect(() => {
     setLikedPost(
@@ -35,7 +37,7 @@ const PostComponent = ({post, display, page}) => {
   };
 
   const handleReaction = () => {
-    console.log('reacting...');
+    navigation.navigate("Post Details", {postId: post.docId});
   };
 
   return (
@@ -57,8 +59,8 @@ const PostComponent = ({post, display, page}) => {
             style={styles.tinyIcon}
             source={
               likedPost
-                ? require('../../assets/images/posts/icon_liked.png')
-                : require('../../assets/images/posts/icon_like.png')
+                ? require("../../assets/images/posts/icon_liked.png")
+                : require("../../assets/images/posts/icon_like.png")
             }
           />
           <Text style={styles.numberOfLR}>{likes.length}</Text>
@@ -68,7 +70,7 @@ const PostComponent = ({post, display, page}) => {
           style={styles.postInfoContainer}>
           <Image
             style={styles.tinyIcon}
-            source={require('../../assets/images/posts/icon_comment.png')}
+            source={require("../../assets/images/posts/icon_comment.png")}
           />
           <Text style={styles.numberOfLR}>{reactions.length}</Text>
         </TouchableOpacity>
@@ -81,17 +83,17 @@ export default PostComponent;
 
 const styles = StyleSheet.create({
   postInfoContainer: {
-    flexDirection: 'row',
-    marginBottom: 5,
+    flexDirection: "row",
   },
   postContainer: {
-    marginBottom: 25,
+    marginBottom: 5,
   },
   tinyProfilePicture: {
     width: 25,
     height: 25,
     borderRadius: 25,
     marginRight: 4,
+    marginBottom: 5,
   },
   numberOfLR: {
     marginTop: 7,
@@ -101,7 +103,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     marginTop: -8,
-    resizeMode: 'cover',
+    resizeMode: "cover",
   },
   postContent: {
     width: 350,
@@ -109,11 +111,13 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   textRight: {
-    marginLeft: 'auto',
-    fontWeight: 'bold',
-    color: 'red',
+    marginLeft: "auto",
+    fontWeight: "bold",
+    color: "red",
+    fontFamily: "",
   },
   ownerName: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
+    fontFamily: "",
   },
 });

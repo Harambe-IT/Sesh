@@ -1,23 +1,23 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import storage from '@react-native-firebase/storage';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
+import storage from "@react-native-firebase/storage";
+import auth, {firebase} from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 
 const MAX_DELTA = 100 / 1104; // Around 100km
 
 export const createNewPost = createAsyncThunk(
-  'posts/create',
+  "posts/create",
   async (post, {rejectWithValue}) => {
     let errorObject = {};
     let uid = auth().currentUser.uid || null;
     if (!uid) errorObject.generic = "User wasn't authenticated";
     if (!post.fileSource)
       errorObject.generic =
-        'Provide a picture or video before trying to post anything.';
-    if (!post.title || post.title.trim() === '')
-      errorObject.title = 'Provide a title, please.';
+        "Provide a picture or video before trying to post anything.";
+    if (!post.title || post.title.trim() === "")
+      errorObject.title = "Provide a title, please.";
     if (!post.region)
-      errorObject.generic = 'Enable location to post a new picture/video.';
+      errorObject.generic = "Enable location to post a new picture/video.";
 
     if (Object.keys(errorObject).length > 0)
       return rejectWithValue(errorObject);
@@ -25,7 +25,7 @@ export const createNewPost = createAsyncThunk(
     let postFileReference = storage().ref(`/${uid}/${post.fileSource.name}`);
     let uploadTask = postFileReference.putFile(post.fileSource.uri);
 
-    uploadTask.on('state_changed', (taskSnapshot) => {
+    uploadTask.on("state_changed", (taskSnapshot) => {
       let totalBytes = taskSnapshot.totalBytes;
       let currentBytesTransferred = taskSnapshot.bytesTransferred;
       let percentage = Math.floor((currentBytesTransferred / totalBytes) * 100);
@@ -38,13 +38,13 @@ export const createNewPost = createAsyncThunk(
       })
       .then((downloadURL) => {
         return firestore()
-          .collection('posts')
+          .collection("posts")
           .add({
             contentUrl: downloadURL,
             createdOn: firestore.FieldValue.serverTimestamp(),
-            owner: firestore().collection('users').doc(uid),
+            owner: firestore().collection("users").doc(uid),
             title: post.title.trim(),
-            type: post.fileSource.type?.includes('image') ? 'picture' : 'clip',
+            type: post.fileSource.type?.includes("image") ? "picture" : "clip",
             location: {...post.region},
           });
       })
@@ -58,20 +58,20 @@ export const createNewPost = createAsyncThunk(
 );
 
 export const createNewSpot = createAsyncThunk(
-  'posts/createSpot',
+  "posts/createSpot",
   async (spot, {rejectWithValue}) => {
     let errorObject = {};
     let uid = auth().currentUser.uid || null;
     if (!uid) errorObject.generic = "User wasn't authenticated";
     if (!spot.fileSource)
       errorObject.generic =
-        'Provide a picture or video before trying to post anything.';
-    if (!spot.title || spot.title.trim() === '')
-      errorObject.title = 'Provide a title, please.';
-    if (!spot.description || spot.description.trim() === '')
-      errorObject.description = 'Provide a description, please.';
+        "Provide a picture or video before trying to post anything.";
+    if (!spot.title || spot.title.trim() === "")
+      errorObject.title = "Provide a title, please.";
+    if (!spot.description || spot.description.trim() === "")
+      errorObject.description = "Provide a description, please.";
     if (!spot.region)
-      errorObject.generic = 'Enable location to post a new picture/video.';
+      errorObject.generic = "Enable location to post a new picture/video.";
 
     if (Object.keys(errorObject).length > 0)
       return rejectWithValue(errorObject);
@@ -79,7 +79,7 @@ export const createNewSpot = createAsyncThunk(
     let spotFileReference = storage().ref(`/${uid}/${spot.fileSource.name}`);
     let uploadTask = spotFileReference.putFile(spot.fileSource.uri);
 
-    uploadTask.on('state_changed', (taskSnapshot) => {
+    uploadTask.on("state_changed", (taskSnapshot) => {
       let totalBytes = taskSnapshot.totalBytes;
       let currentBytesTransferred = taskSnapshot.bytesTransferred;
       let percentage = Math.floor((currentBytesTransferred / totalBytes) * 100);
@@ -92,13 +92,13 @@ export const createNewSpot = createAsyncThunk(
       })
       .then((downloadURL) => {
         return firestore()
-          .collection('spots')
+          .collection("spots")
           .add({
             contentUrl: downloadURL,
             createdOn: firestore.FieldValue.serverTimestamp(),
-            owner: firestore().collection('users').doc(uid),
+            owner: firestore().collection("users").doc(uid),
             title: spot.title.trim(),
-            type: 'picture',
+            type: "picture",
             location: {...spot.region},
           });
       })
@@ -112,14 +112,14 @@ export const createNewSpot = createAsyncThunk(
 );
 
 export const getPostsByUser = createAsyncThunk(
-  'posts/getByUser',
+  "posts/getByUser",
   async (uid, {rejectWithValue}) => {
-    let user = firestore().collection('users').doc(uid);
+    let user = firestore().collection("users").doc(uid);
 
     return firestore()
-      .collection('posts')
-      .where('owner', '==', user)
-      .orderBy('createdOn')
+      .collection("posts")
+      .where("owner", "==", user)
+      .orderBy("createdOn")
       .get()
       .then(async (snapshot) => {
         let posts = [];
@@ -143,11 +143,11 @@ export const getPostsByUser = createAsyncThunk(
               };
             });
 
-          let getLikes = getLikesFrom('posts', tempPost.docId).then((likes) => {
+          let getLikes = getLikesFrom("posts", tempPost.docId).then((likes) => {
             tempPost.likes = likes;
           });
 
-          let getReactions = getReactionsFrom('posts', tempPost.docId).then(
+          let getReactions = getReactionsFrom("posts", tempPost.docId).then(
             (reactions) => {
               tempPost.reactions = reactions;
             },
@@ -175,14 +175,14 @@ export const getPostsByUser = createAsyncThunk(
 );
 
 export const getSpotsByUser = createAsyncThunk(
-  'spots/getByUser',
+  "spots/getByUser",
   async (uid, {rejectWithValue}) => {
-    let user = firestore().collection('users').doc(uid);
+    let user = firestore().collection("users").doc(uid);
 
     return firestore()
-      .collection('spots')
-      .where('owner', '==', user)
-      .orderBy('createdOn')
+      .collection("spots")
+      .where("owner", "==", user)
+      .orderBy("createdOn")
       .get()
       .then(async (snapshot) => {
         let spots = [];
@@ -206,11 +206,11 @@ export const getSpotsByUser = createAsyncThunk(
               };
             });
 
-          let getLikes = getLikesFrom('spots', tempSpot.docId).then((likes) => {
+          let getLikes = getLikesFrom("spots", tempSpot.docId).then((likes) => {
             tempSpot.likes = likes;
           });
 
-          let getReactions = getReactionsFrom('spots', tempSpot.docId).then(
+          let getReactions = getReactionsFrom("spots", tempSpot.docId).then(
             (reactions) => {
               tempSpot.reactions = reactions;
             },
@@ -238,19 +238,19 @@ export const getSpotsByUser = createAsyncThunk(
 );
 
 export const getFollowingPosts = createAsyncThunk(
-  'posts/getFollowing',
+  "posts/getFollowing",
   async (user, {rejectWithValue}) => {
     let uids = user.following.map((f) => {
-      return firestore().collection('users').doc(f.followedId);
+      return firestore().collection("users").doc(f.followedId);
     });
 
     // Add own id aswell
-    uids.push(firestore().collection('users').doc(user.uid));
+    uids.push(firestore().collection("users").doc(user.uid));
 
     return firestore()
-      .collection('posts')
-      .where('owner', 'in', uids)
-      .orderBy('createdOn')
+      .collection("posts")
+      .where("owner", "in", uids)
+      .orderBy("createdOn")
       .get()
       .then(async (snapshot) => {
         let posts = [];
@@ -260,37 +260,35 @@ export const getFollowingPosts = createAsyncThunk(
           let tempPost = {
             docId: doc.id,
             ...doc.data(),
-            createdOn: doc.data().createdOn.seconds,
+            createdOn: doc.data()?.createdOn?.seconds || null,
           };
 
-          let getOwnerData = doc
+          let ownerData = doc
             .data()
             .owner.get()
             .then((doc) => {
               tempPost.owner = {
                 uid: doc.id,
                 ...doc.data(),
-                createdOn: doc.data().createdOn.seconds,
+                createdOn: doc.data()?.createdOn?.seconds || null,
               };
             });
 
-          let getLikes = getLikesFrom('posts', tempPost.docId).then((likes) => {
+          let likes = getLikesFrom("posts", tempPost.docId).then((likes) => {
             tempPost.likes = likes;
           });
 
-          let getReactions = getReactionsFrom('posts', tempPost.docId).then(
+          let reactions = getReactionsFrom("posts", tempPost.docId).then(
             (reactions) => {
               tempPost.reactions = reactions;
             },
           );
 
-          let addToList = Promise.all([
-            getOwnerData,
-            getLikes,
-            getReactions,
-          ]).then(() => {
-            posts.push(tempPost);
-          });
+          let addToList = Promise.all([ownerData, likes, reactions]).then(
+            () => {
+              posts.push(tempPost);
+            },
+          );
 
           promises.push(addToList);
         });
@@ -306,7 +304,7 @@ export const getFollowingPosts = createAsyncThunk(
 );
 
 export const getAllPostsByRegion = createAsyncThunk(
-  'posts/getAllPostsByRegion',
+  "posts/getAllPostsByRegion",
   async (region, {rejectWithValue}) => {
     let latitudeDelta = region.latitudeDelta;
     let longitudeDelta = region.longitudeDelta;
@@ -314,15 +312,15 @@ export const getAllPostsByRegion = createAsyncThunk(
     if (longitudeDelta > MAX_DELTA) longitudeDelta = MAX_DELTA;
 
     return firestore()
-      .collection('posts')
-      .where('location.latitude', '>=', region.latitude - latitudeDelta)
-      .where('location.latitude', '<=', region.latitude + latitudeDelta)
+      .collection("posts")
+      .where("location.latitude", ">=", region.latitude - latitudeDelta)
+      .where("location.latitude", "<=", region.latitude + latitudeDelta)
       .get()
       .then(async (snapshot) => {
         let posts = [];
         let promises = [];
 
-        console.log(snapshot.size, 'posts found');
+        console.log(snapshot.size, "posts found");
         snapshot.forEach((doc) => {
           let tempPost = {
             docId: doc.id,
@@ -349,13 +347,13 @@ export const getAllPostsByRegion = createAsyncThunk(
                 };
               });
 
-            let getLikes = getLikesFrom('posts', tempPost.docId).then(
+            let getLikes = getLikesFrom("posts", tempPost.docId).then(
               (likes) => {
                 tempPost.likes = likes;
               },
             );
 
-            let getReactions = getReactionsFrom('posts', tempPost.docId).then(
+            let getReactions = getReactionsFrom("posts", tempPost.docId).then(
               (reactions) => {
                 tempPost.reactions = reactions;
               },
@@ -384,7 +382,7 @@ export const getAllPostsByRegion = createAsyncThunk(
 );
 
 export const getAllSpotsByRegion = createAsyncThunk(
-  'posts/getAllSpotsByRegion',
+  "posts/getAllSpotsByRegion",
   async (region, {rejectWithValue}) => {
     let latitudeDelta = region.latitudeDelta;
     let longitudeDelta = region.longitudeDelta;
@@ -392,15 +390,15 @@ export const getAllSpotsByRegion = createAsyncThunk(
     if (longitudeDelta > MAX_DELTA) longitudeDelta = MAX_DELTA;
 
     return firestore()
-      .collection('spots')
-      .where('location.latitude', '>=', region.latitude - latitudeDelta)
-      .where('location.latitude', '<=', region.latitude + latitudeDelta)
+      .collection("spots")
+      .where("location.latitude", ">=", region.latitude - latitudeDelta)
+      .where("location.latitude", "<=", region.latitude + latitudeDelta)
       .get()
       .then(async (snapshot) => {
         let spots = [];
         let promises = [];
 
-        console.log(snapshot.size, 'spots found');
+        console.log(snapshot.size, "spots found");
         snapshot.forEach((doc) => {
           let tempPost = {
             docId: doc.id,
@@ -427,13 +425,13 @@ export const getAllSpotsByRegion = createAsyncThunk(
                 };
               });
 
-            let getLikes = getLikesFrom('spots', tempPost.docId).then(
+            let getLikes = getLikesFrom("spots", tempPost.docId).then(
               (likes) => {
                 tempPost.likes = likes;
               },
             );
 
-            let getReactions = getReactionsFrom('spots', tempPost.docId).then(
+            let getReactions = getReactionsFrom("spots", tempPost.docId).then(
               (reactions) => {
                 tempPost.reactions = reactions;
               },
@@ -461,13 +459,60 @@ export const getAllSpotsByRegion = createAsyncThunk(
   },
 );
 
+export const getPostById = createAsyncThunk(
+  "posts/getPostById",
+  async (docId, {rejectWithValue}) => {
+    return firestore()
+      .collection("posts")
+      .doc(docId)
+      .get()
+      .then(async (doc) => {
+        let tempPost = {
+          docId: doc.id,
+          ...doc.data(),
+          createdOn: doc.data().createdOn.seconds,
+        };
+
+        let getOwnerData = doc
+          .data()
+          .owner.get()
+          .then((doc) => {
+            tempPost.owner = {
+              uid: doc.id,
+              ...doc.data(),
+              createdOn: doc.data().createdOn.seconds,
+            };
+          });
+
+        let getLikes = getLikesFrom("posts", tempPost.docId).then((likes) => {
+          tempPost.likes = likes;
+        });
+
+        let getReactions = getReactionsFrom("posts", tempPost.docId).then(
+          (reactions) => {
+            tempPost.reactions = reactions;
+          },
+        );
+
+        return Promise.all([getOwnerData, getLikes, getReactions]).then(() => {
+          return tempPost;
+        });
+      })
+      .catch((err) => {
+        return rejectWithValue(err.message);
+      });
+  },
+);
+
 const getLikesFrom = async (collection, document) => {
   return firestore()
     .collection(collection)
     .doc(document)
-    .collection('likes')
+    .collection("likes")
     .get()
     .then(async (snapshot) => {
+      if (snapshot.empty) return [];
+
       let likes = [];
       let likePromises = [];
 
@@ -502,9 +547,12 @@ const getReactionsFrom = async (collection, document) => {
   return firestore()
     .collection(collection)
     .doc(document)
-    .collection('reactions')
+    .collection("reactions")
+    .orderBy("createdOn", "desc")
     .get()
     .then(async (snapshot) => {
+      if (snapshot.empty) return Promise.resolve([]);
+
       let reactions = [];
       let reactionPromises = [];
 
@@ -512,7 +560,7 @@ const getReactionsFrom = async (collection, document) => {
         let tempReaction = {
           docId: doc.id,
           ...doc.data(),
-          createdOn: doc.data().createdOn.seconds,
+          createdOn: doc.data()?.createdOn?.seconds || null,
         };
 
         let getReactionOwnerData = doc
@@ -522,7 +570,7 @@ const getReactionsFrom = async (collection, document) => {
             tempReaction.owner = {
               uid: doc.id,
               ...doc.data(),
-              createdOn: doc.data().createdOn.seconds,
+              createdOn: doc.data()?.createdOn?.seconds || null,
             };
 
             reactions.push(tempReaction);
@@ -538,25 +586,25 @@ const getReactionsFrom = async (collection, document) => {
 };
 
 const uploadProgressChanged = createAsyncThunk(
-  'posts/uploadProgressChanged',
+  "posts/uploadProgressChanged",
   async (progress, {rejectWithValue}) => {
     if (progress) return progress;
-    else rejectWithValue('Percentage could not be shown.');
+    else rejectWithValue("Percentage could not be shown.");
   },
 );
 
 export const likePost = createAsyncThunk(
-  'posts/like',
+  "posts/like",
   async ({postId, page}, {rejectWithValue}) => {
     let uid = auth().currentUser.uid;
-    let userReference = firestore().collection('users').doc(uid);
+    let userReference = firestore().collection("users").doc(uid);
     let postLikesReference = firestore()
-      .collection('posts')
+      .collection("posts")
       .doc(postId)
-      .collection('likes');
+      .collection("likes");
 
     return postLikesReference
-      .where('owner', '==', userReference)
+      .where("owner", "==", userReference)
       .get()
       .then(async (snapshot) => {
         if (snapshot.empty) {
@@ -583,14 +631,35 @@ export const likePost = createAsyncThunk(
             });
         }
       })
-      .catch((err) => {
-        return rejectWithValue(err);
-      });
+      .catch((err) => rejectWithValue(err));
+  },
+);
+
+export const reactPost = createAsyncThunk(
+  "posts/react",
+  async ({postId, reaction}, {rejectWithValue}) => {
+    if (reaction.trim() === "") rejectWithValue("No content");
+
+    let uid = auth().currentUser.uid;
+    let userReference = firestore().collection("users").doc(uid);
+    let postReactionReference = firestore()
+      .collection("posts")
+      .doc(postId)
+      .collection("reactions");
+
+    return postReactionReference
+      .add({
+        owner: userReference,
+        text: reaction,
+        createdOn: firestore.FieldValue.serverTimestamp(),
+      })
+      .then(() => true)
+      .catch((err) => rejectWithValue(err));
   },
 );
 
 const postSlice = createSlice({
-  name: 'posts',
+  name: "posts",
   initialState: {
     isFetching: false,
     isUploading: false,
@@ -601,7 +670,9 @@ const postSlice = createSlice({
     postsByLocation: null,
     spotsByLocation: null,
     postsByUser: null,
+    postById: null,
     spotsByUser: null,
+    commented: false,
   },
   reducers: {
     resetCreateErrors: (state, action) => {
@@ -649,6 +720,19 @@ const postSlice = createSlice({
       state.postsFollowing = action.payload;
     },
     [getFollowingPosts.rejected]: (state, action) => {
+      state.isFetching = false;
+      state.errors = action.payload;
+    },
+    [getPostById.pending]: (state, action) => {
+      state.isFetching = true;
+      state.errors = null;
+      state.postById = null;
+    },
+    [getPostById.fulfilled]: (state, action) => {
+      state.isFetching = false;
+      state.postById = action.payload;
+    },
+    [getPostById.rejected]: (state, action) => {
       state.isFetching = false;
       state.errors = action.payload;
     },
@@ -712,7 +796,7 @@ const postSlice = createSlice({
       const {liked, postId, page} = action.payload;
       let indexPostElement;
 
-      if (page === 'Explore') {
+      if (page === "Explore") {
         let tempPostElement = state.postsFollowing.filter((el, i) => {
           if (el.docId === postId) indexPostElement = i;
           return el.docId === postId;
@@ -751,6 +835,21 @@ const postSlice = createSlice({
     [likePost.rejected]: (state, action) => {
       state.isFetching = false;
       state.errors = null;
+    },
+    [reactPost.pending]: (state, action) => {
+      state.isFetching = true;
+      state.errors = null;
+      state.commented = false;
+    },
+    [reactPost.fulfilled]: (state, action) => {
+      state.isFetching = false;
+      state.errors = null;
+      state.commented = true;
+    },
+    [reactPost.rejected]: (state, action) => {
+      state.isFetching = false;
+      state.errors = null;
+      state.commented = false;
     },
   },
 });

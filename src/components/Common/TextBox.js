@@ -12,7 +12,7 @@ const TextBox = ({
 }) => {
   return (
     <TextInput
-      style={[styles.textBox, style]}
+      style={style}
       onChangeText={onChangeText}
       value={value}
       placeholder={placeholder}
@@ -23,9 +23,5 @@ const TextBox = ({
     />
   );
 };
-
-const styles = StyleSheet.create({
-  textBox: {},
-});
 
 export default memo(TextBox);

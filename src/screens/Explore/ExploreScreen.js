@@ -1,9 +1,8 @@
-import React, {useEffect} from 'react';
-import {ScrollView, View, Text, StyleSheet, RefreshControl} from 'react-native';
-import {useSelector, useDispatch} from 'react-redux';
-
-import {Picture, Spot, Video, Sesh} from '../../components/Explore';
-import {getFollowingPosts} from '../../features/posts/postSlice';
+import React, {useEffect} from "react";
+import {RefreshControl, ScrollView, StyleSheet, Text, View} from "react-native";
+import {useDispatch, useSelector} from "react-redux";
+import {Picture, Video} from "../../components/Explore";
+import {getFollowingPosts} from "../../features/posts/postSlice";
 
 const ExploreScreen = () => {
   const dispatch = useDispatch();
@@ -11,6 +10,7 @@ const ExploreScreen = () => {
   const {postsFollowing, isFetching, errors} = useSelector(
     (state) => state.posts,
   );
+
   const [refreshing, setRefreshing] = React.useState(false);
 
   const handleRefresh = () => {
@@ -31,17 +31,15 @@ const ExploreScreen = () => {
     postsFollowing?.length > 0 ? (
       postsFollowing.map((post) => {
         switch (post.type) {
-          case 'picture':
+          case "picture":
             return <Picture key={post.docId} post={post} page="Explore" />;
-          case 'clip':
+          case "clip":
             return <Video key={post.docId} post={post} page="Explore" />;
-          default:
-            return <Picture key={post.docId} post={post} page="Explore" />;
         }
       })
     ) : (
       <Text>
-        No posts were found.{'\n'}Try following someone or posting something
+        No posts were found.{"\n"}Try following someone or posting something
         yourself.
       </Text>
     );
@@ -60,7 +58,7 @@ export default ExploreScreen;
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: 20,
   },
 });
