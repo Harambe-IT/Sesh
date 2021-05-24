@@ -1,10 +1,23 @@
-import React from 'react';
-import {View, Image, StyleSheet} from 'react-native';
+import React from "react";
+import {View, Image, StyleSheet} from "react-native";
 
-const PostPreviewComponent = ({style, source}) => {
+const PostPreviewComponent = ({style, source, type}) => {
+  let player;
   return (
     <View style={styles.container}>
-      <Image source={source} style={styles.imagePreview} />
+      {type === "clip" ? (
+        <Video
+          style={styles.imagePreview}
+          source={source}
+          ref={(ref) => {
+            player = ref;
+          }}
+          controls={true}
+          onError={console.error}
+        />
+      ) : (
+        <Image source={source} style={styles.imagePreview} />
+      )}
     </View>
   );
 };
@@ -13,11 +26,11 @@ export default PostPreviewComponent;
 
 const styles = StyleSheet.create({
   container: {
-    margin: 10,
+    margin: "1%",
   },
   imagePreview: {
-    width: 155,
-    height: 155,
+    flex: 1,
+    aspectRatio: 1,
     borderRadius: 20,
   },
 });

@@ -1,7 +1,7 @@
-import React from 'react';
-import Video from 'react-native-video';
+import React from "react";
+import Video from "react-native-video";
 
-import PostComponent from './PostComponent';
+import PostComponent from "./PostComponent";
 
 const Display = ({style, source}) => {
   let player;
@@ -18,8 +18,15 @@ const Display = ({style, source}) => {
   );
 };
 
-const VideoPost = ({post, page}) => {
-  return <PostComponent display={Display} post={post} page={page} />;
+const VideoPost = ({post, page, handleRefresh}) => {
+  return (
+    <PostComponent
+      display={Display}
+      post={post}
+      page={page}
+      handleRefresh={handleRefresh}
+    />
+  );
 };
 
 export default VideoPost;

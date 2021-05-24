@@ -3,7 +3,12 @@ import {NavigationContainer} from "@react-navigation/native";
 import {createStackNavigator} from "@react-navigation/stack";
 
 import {useSelector, useDispatch} from "react-redux";
-import {authChanged} from "./src/features/authentication/authenticationSlice";
+import {
+  authChanged,
+  reset as resetAuth,
+} from "./src/features/authentication/authenticationSlice";
+import {reset as resetPosts} from "./src/features/posts/postSlice";
+import {reset as resetProfile} from "./src/features/profile/profileSlice";
 import auth from "@react-native-firebase/auth";
 
 import LoginScreen from "./src/screens/Authentication/LoginScreen";
@@ -19,6 +24,11 @@ const App = () => {
   const dispatch = useDispatch();
 
   const handleAuthChange = async (user) => {
+    if (!user) {
+      dispatch(resetAuth());
+      dispatch(resetPosts());
+      dispatch(resetProfile());
+    }
     dispatch(authChanged(user));
   };
 

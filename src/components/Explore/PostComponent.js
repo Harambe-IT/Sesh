@@ -6,7 +6,7 @@ import {useNavigation} from "@react-navigation/native";
 
 import {likePost} from "../../features/posts/postSlice";
 
-const PostComponent = ({post, display, page}) => {
+const PostComponent = ({post, display, page, handleRefresh}) => {
   const Display = display;
 
   const {
@@ -34,10 +34,15 @@ const PostComponent = ({post, display, page}) => {
 
   const handleLike = () => {
     dispatch(likePost({postId: post.docId, page}));
+    handleRefresh();
   };
 
   const handleReaction = () => {
     navigation.navigate("Post Details", {postId: post.docId});
+  };
+
+  const handleGoToProfile = () => {
+    navigation.navigate("Profile", {uid: owner.uid});
   };
 
   return (
@@ -47,7 +52,16 @@ const PostComponent = ({post, display, page}) => {
           style={styles.tinyProfilePicture}
           source={{uri: `https://picsum.photos/200/300?random=${post.docId}`}}
         />
-        <Text style={styles.ownerName}>{`${owner.username}`}</Text>
+        <TouchableOpacity onPress={handleGoToProfile}>
+          <Text
+            style={
+              owner.uid === auth().currentUser.uid
+                ? styles.ownerNameSelf
+                : styles.ownerName
+            }>{`${
+            owner.uid === auth().currentUser.uid ? "You" : owner.userName
+          }`}</Text>
+        </TouchableOpacity>
         <Text style={styles.textRight}>{type}</Text>
       </View>
 
@@ -118,6 +132,11 @@ const styles = StyleSheet.create({
   },
   ownerName: {
     fontWeight: "bold",
+    fontFamily: "",
+  },
+  ownerNameSelf: {
+    fontWeight: "bold",
+    color: "red",
     fontFamily: "",
   },
 });

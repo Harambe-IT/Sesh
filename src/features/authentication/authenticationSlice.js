@@ -208,17 +208,19 @@ export const authChanged = createAsyncThunk(
   },
 );
 
+const initialState = {
+  isFetching: true,
+  user: null,
+  loginErrors: null,
+  signUpErrors: null,
+  resetPasswordErrors: null,
+  resetPasswordConfirmation: null,
+};
+
 const authSlice = createSlice({
   name: "auth",
-  initialState: {
-    isFetching: true,
-    user: null,
-    loginErrors: null,
-    signUpErrors: null,
-    resetPasswordErrors: null,
-    resetPasswordConfirmation: null,
-  },
-  reducers: {},
+  initialState: initialState,
+  reducers: {reset: (state) => initialState},
   extraReducers: {
     [signIn.pending]: (state, action) => {
       state.isFetching = true;
@@ -294,4 +296,5 @@ const authSlice = createSlice({
   },
 });
 
+export const {reset} = authSlice.actions;
 export default authSlice.reducer;

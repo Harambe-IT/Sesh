@@ -9,19 +9,23 @@ import Comment from "../../components/Common/Comment";
 
 const PostDetailsScreen = () => {
   const dispatch = useDispatch();
+  const [comment, setComment] = useState("");
+  const route = useRoute();
   const {postById, commented, isFetching, errors} = useSelector(
     (state) => state.posts,
   );
-  const [comment, setComment] = useState("");
 
-  const route = useRoute();
-  useEffect(() => {
+  const handleRefresh = () => {
     dispatch(getPostById(route.params.postId));
-  }, [route.params.postId]);
+  };
 
   const handleSend = () => {
     dispatch(reactPost({postId: postById.docId, reaction: comment}));
   };
+
+  useEffect(() => {
+    dispatch(getPostById(route.params.postId));
+  }, [route.params.postId]);
 
   useEffect(() => {
     setComment("");
@@ -33,9 +37,19 @@ const PostDetailsScreen = () => {
       {postById && (
         <View style={styles.container}>
           {postById.type === "picture" ? (
-            <Picture key={postById.docId} post={postById} page="Explore" />
+            <Picture
+              key={postById.docId}
+              post={postById}
+              page="Explore"
+              handleRefresh={handleRefresh}
+            />
           ) : (
-            <Video key={postById.docId} post={postById} page="Explore" />
+            <Video
+              key={postById.docId}
+              post={postById}
+              page="Explore"
+              handleRefresh={handleRefresh}
+            />
           )}
           <ScrollView style={styles.commentsBox}>
             {postById.reactions?.length > 0 ? (
@@ -90,6 +104,8 @@ const styles = StyleSheet.create({
   },
   commentsBox: {
     width: "100%",
+    padding: "2%",
     marginBottom: "11%",
+    borderWidth: StyleSheet.hairlineWidth,
   },
 });

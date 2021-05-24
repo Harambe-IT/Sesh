@@ -658,26 +658,29 @@ export const reactPost = createAsyncThunk(
   },
 );
 
+const initialState = {
+  isFetching: false,
+  isUploading: false,
+  uploadPercentage: null,
+  errors: null,
+  uploaded: false,
+  postsFollowing: null,
+  postsByLocation: null,
+  spotsByLocation: null,
+  postsByUser: null,
+  postById: null,
+  spotsByUser: null,
+  commented: false,
+};
+
 const postSlice = createSlice({
   name: "posts",
-  initialState: {
-    isFetching: false,
-    isUploading: false,
-    uploadPercentage: null,
-    errors: null,
-    uploaded: false,
-    postsFollowing: null,
-    postsByLocation: null,
-    spotsByLocation: null,
-    postsByUser: null,
-    postById: null,
-    spotsByUser: null,
-    commented: false,
-  },
+  initialState: initialState,
   reducers: {
     resetCreateErrors: (state, action) => {
       state.errors = null;
     },
+    reset: (state) => initialState,
   },
   extraReducers: {
     [createNewPost.pending]: (state, action) => {
@@ -854,5 +857,5 @@ const postSlice = createSlice({
   },
 });
 
-export const {resetCreateErrors} = postSlice.actions;
+export const {resetCreateErrors, reset} = postSlice.actions;
 export default postSlice.reducer;

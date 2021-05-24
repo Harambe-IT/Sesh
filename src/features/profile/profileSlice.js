@@ -1,19 +1,14 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import firestore from '@react-native-firebase/firestore';
+import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
+import firestore from "@react-native-firebase/firestore";
 
 export const getUserProfile = createAsyncThunk(
-  'profile/getById',
+  "profile/getById",
   async (uid, {rejectWithValue}) => {
     return firestore()
-      .collection('users')
+      .collection("users")
       .doc(uid)
       .get()
       .then((doc) => {
-        console.log({
-          uid: doc.id,
-          ...doc.data(),
-          createdOn: doc.data()?.createdOn.seconds,
-        });
         return {
           uid: doc.id,
           ...doc.data(),
@@ -26,14 +21,16 @@ export const getUserProfile = createAsyncThunk(
   },
 );
 
+const initialState = {
+  isFetching: false,
+  errors: null,
+  user: null,
+};
+
 const profileSlice = createSlice({
-  name: 'profile',
-  initialState: {
-    isFetching: false,
-    errors: null,
-    user: null,
-  },
-  reducers: {},
+  name: "profile",
+  initialState: initialState,
+  reducers: {reset: (state) => initialState},
   extraReducers: {
     [getUserProfile.pending]: (state, action) => {
       state.isFetching = true;
@@ -51,4 +48,5 @@ const profileSlice = createSlice({
   },
 });
 
+export const {reset} = profileSlice.actions;
 export default profileSlice.reducer;
