@@ -25,6 +25,10 @@ const ExploreScreen = () => {
     navigation.navigate("Discover");
   };
 
+  const handleNavigateToDetails = (docId) => {
+    navigation.navigate("Post Details", {postId: docId});
+  };
+
   useEffect(() => {
     dispatch(getFollowingPosts(user));
   }, []);
@@ -39,23 +43,9 @@ const ExploreScreen = () => {
       postsFollowing.map((post) => {
         switch (post.type) {
           case "picture":
-            return (
-              <Picture
-                key={post.docId}
-                post={post}
-                page="Explore"
-                handleRefresh={handleRefresh}
-              />
-            );
+            return <Picture key={post.docId} post={post} page="Explore" />;
           case "clip":
-            return (
-              <Video
-                key={post.docId}
-                post={post}
-                page="Explore"
-                handleRefresh={handleRefresh}
-              />
-            );
+            return <Video key={post.docId} post={post} page="Explore" />;
         }
       })
     ) : (

@@ -18,15 +18,8 @@ const Display = ({style, source}) => {
   );
 };
 
-const VideoPost = ({post, page, handleRefresh}) => {
-  return (
-    <PostComponent
-      display={Display}
-      post={post}
-      page={page}
-      handleRefresh={handleRefresh}
-    />
-  );
+const VideoPost = ({post, page}) => {
+  return <PostComponent display={Display} post={post} page={page} />;
 };
 
 export default VideoPost;

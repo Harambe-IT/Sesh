@@ -320,7 +320,6 @@ export const getAllPostsByRegion = createAsyncThunk(
         let posts = [];
         let promises = [];
 
-        console.log(snapshot.size, "posts found");
         snapshot.forEach((doc) => {
           let tempPost = {
             docId: doc.id,
@@ -398,7 +397,6 @@ export const getAllSpotsByRegion = createAsyncThunk(
         let spots = [];
         let promises = [];
 
-        console.log(snapshot.size, "spots found");
         snapshot.forEach((doc) => {
           let tempPost = {
             docId: doc.id,
@@ -670,7 +668,6 @@ const initialState = {
   postsByUser: null,
   postById: null,
   spotsByUser: null,
-  commented: false,
 };
 
 const postSlice = createSlice({
@@ -681,6 +678,10 @@ const postSlice = createSlice({
       state.errors = null;
     },
     reset: (state) => initialState,
+    updateComments: (state, action) => {
+      if (state.postById)
+        state.postById = {...state.postById, reactions: action.payload};
+    },
   },
   extraReducers: {
     [createNewPost.pending]: (state, action) => {
@@ -729,7 +730,6 @@ const postSlice = createSlice({
     [getPostById.pending]: (state, action) => {
       state.isFetching = true;
       state.errors = null;
-      state.postById = null;
     },
     [getPostById.fulfilled]: (state, action) => {
       state.isFetching = false;
@@ -797,41 +797,58 @@ const postSlice = createSlice({
       state.isFetching = false;
 
       const {liked, postId, page} = action.payload;
-      let indexPostElement;
 
-      if (page === "Explore") {
-        let tempPostElement = state.postsFollowing.filter((el, i) => {
-          if (el.docId === postId) indexPostElement = i;
-          return el.docId === postId;
-        })[0];
+      if (page === "Details") {
+        let tempPostElement = {...state.postById};
 
         if (liked) {
           const {owner} = action.payload;
           tempPostElement.likes.push({owner});
-          state.postsFollowing[indexPostElement] = tempPostElement;
+          state.postById = tempPostElement;
         } else {
           const {uid} = action.payload;
           tempPostElement.likes = tempPostElement.likes.filter(
             (like) => like.owner.uid !== uid,
           );
-          state.postsFollowing[indexPostElement] = tempPostElement;
+          state.postById = tempPostElement;
         }
       } else {
-        let tempPostElement = state.postsByLocation.filter((el, i) => {
-          if (el.docId === postId) indexPostElement = i;
-          return el.docId === postId;
-        })[0];
+        let indexPostElement;
 
-        if (liked) {
-          const {owner} = action.payload;
-          tempPostElement.likes.push({owner});
-          state.postsByLocation[indexPostElement] = tempPostElement;
+        if (page === "Explore") {
+          let tempPostElement = state.postsFollowing.filter((el, i) => {
+            if (el.docId === postId) indexPostElement = i;
+            return el.docId === postId;
+          })[0];
+
+          if (liked) {
+            const {owner} = action.payload;
+            tempPostElement.likes.push({owner});
+            state.postsFollowing[indexPostElement] = tempPostElement;
+          } else {
+            const {uid} = action.payload;
+            tempPostElement.likes = tempPostElement.likes.filter(
+              (like) => like.owner.uid !== uid,
+            );
+            state.postsFollowing[indexPostElement] = tempPostElement;
+          }
         } else {
-          const {uid} = action.payload;
-          tempPostElement.likes = tempPostElement.likes.filter(
-            (like) => like.owner.uid !== uid,
-          );
-          state.postsByLocation[indexPostElement] = tempPostElement;
+          let tempPostElement = state.postsByLocation.filter((el, i) => {
+            if (el.docId === postId) indexPostElement = i;
+            return el.docId === postId;
+          })[0];
+
+          if (liked) {
+            const {owner} = action.payload;
+            tempPostElement.likes.push({owner});
+            state.postsByLocation[indexPostElement] = tempPostElement;
+          } else {
+            const {uid} = action.payload;
+            tempPostElement.likes = tempPostElement.likes.filter(
+              (like) => like.owner.uid !== uid,
+            );
+            state.postsByLocation[indexPostElement] = tempPostElement;
+          }
         }
       }
     },
@@ -842,20 +859,17 @@ const postSlice = createSlice({
     [reactPost.pending]: (state, action) => {
       state.isFetching = true;
       state.errors = null;
-      state.commented = false;
     },
     [reactPost.fulfilled]: (state, action) => {
       state.isFetching = false;
       state.errors = null;
-      state.commented = true;
     },
     [reactPost.rejected]: (state, action) => {
       state.isFetching = false;
-      state.errors = null;
-      state.commented = false;
+      state.errors = action.payload;
     },
   },
 });
 
-export const {resetCreateErrors, reset} = postSlice.actions;
+export const {resetCreateErrors, reset, updateComments} = postSlice.actions;
 export default postSlice.reducer;

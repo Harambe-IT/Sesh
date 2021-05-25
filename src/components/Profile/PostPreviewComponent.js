@@ -1,5 +1,6 @@
 import React from "react";
 import {View, Image, StyleSheet} from "react-native";
+import Video from "react-native-video";
 
 const PostPreviewComponent = ({style, source, type}) => {
   let player;

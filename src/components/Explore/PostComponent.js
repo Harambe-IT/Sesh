@@ -6,7 +6,7 @@ import {useNavigation} from "@react-navigation/native";
 
 import {likePost} from "../../features/posts/postSlice";
 
-const PostComponent = ({post, display, page, handleRefresh}) => {
+const PostComponent = ({post, display, page}) => {
   const Display = display;
 
   const {
@@ -34,7 +34,6 @@ const PostComponent = ({post, display, page, handleRefresh}) => {
 
   const handleLike = () => {
     dispatch(likePost({postId: post.docId, page}));
-    handleRefresh();
   };
 
   const handleReaction = () => {
@@ -43,6 +42,10 @@ const PostComponent = ({post, display, page, handleRefresh}) => {
 
   const handleGoToProfile = () => {
     navigation.navigate("Profile", {uid: owner.uid});
+  };
+
+  const handleGoToDetailsPage = () => {
+    navigation.navigate("Post Details", {postId: post.docId});
   };
 
   return (
@@ -59,13 +62,15 @@ const PostComponent = ({post, display, page, handleRefresh}) => {
                 ? styles.ownerNameSelf
                 : styles.ownerName
             }>{`${
-            owner.uid === auth().currentUser.uid ? "You" : owner.userName
+            owner.uid === auth().currentUser.uid ? "You" : owner.username
           }`}</Text>
         </TouchableOpacity>
         <Text style={styles.textRight}>{type}</Text>
       </View>
 
-      <Display style={styles.postContent} source={{uri: contentUrl}} />
+      <TouchableOpacity onPress={handleGoToDetailsPage}>
+        <Display style={styles.postContent} source={{uri: contentUrl}} />
+      </TouchableOpacity>
 
       <View style={styles.postInfoContainer}>
         <TouchableOpacity onPress={handleLike} style={styles.postInfoContainer}>

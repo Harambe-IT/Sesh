@@ -1,19 +1,23 @@
-import React, {useEffect} from "react";
-import {
-  View,
-  ScrollView,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-} from "react-native";
-import {useSelector, useDispatch} from "react-redux";
 import auth from "@react-native-firebase/auth";
-import {useRoute, useNavigation} from "@react-navigation/native";
-
-import {getUserProfile} from "../../features/profile/profileSlice";
-import {getPostsByUser, getSpotsByUser} from "../../features/posts/postSlice";
+import firestore from "@react-native-firebase/firestore";
+import {useNavigation, useRoute} from "@react-navigation/native";
+import React, {useEffect, useMemo} from "react";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {useDispatch, useSelector} from "react-redux";
 import PostPreviewComponent from "../../components/Profile/PostPreviewComponent";
+import {updateFollowing} from "../../features/authentication/authenticationSlice";
+import {getPostsByUser, getSpotsByUser} from "../../features/posts/postSlice";
+import {
+  getUserProfile,
+  toggleFollow,
+} from "../../features/profile/profileSlice";
 
 const ProfileScreen = () => {
   const dispatch = useDispatch();
@@ -21,10 +25,20 @@ const ProfileScreen = () => {
   const navigation = useNavigation();
   const uid = route.params?.uid || auth().currentUser.uid;
   const {user} = useSelector((state) => state.profile);
+  const authState = useSelector((state) => state.auth);
   const {postsByUser, spotsByUser} = useSelector((state) => state.posts);
+  const isFollowing = useMemo(() => {
+    return (
+      authState.user.following.filter((follow) => follow.followedId === uid)
+        .length >= 1
+    );
+  }, [authState]);
 
   const handleFollow = () => {
-    console.log("trying to follow");
+    const followedById = auth().currentUser.uid;
+    const followedId = uid;
+
+    dispatch(toggleFollow({followedById, followedId}));
   };
 
   const handleNavigateToDetails = (docId) => {
@@ -38,6 +52,27 @@ const ProfileScreen = () => {
       dispatch(getSpotsByUser(uid));
     }
   }, [uid]);
+
+  useEffect(() => {
+    const followingSubscriber = firestore()
+      .collection("followers")
+      .onSnapshot((snapshot) => {
+        let validDocs = snapshot.docs.filter(
+          (doc) => doc.data().followedById === auth().currentUser.uid,
+        );
+        let following = [];
+        validDocs.forEach((doc) => {
+          following.push({
+            docId: doc.id,
+            ...doc.data(),
+          });
+        });
+
+        dispatch(updateFollowing(following));
+      });
+
+    return followingSubscriber;
+  }, [dispatch]);
 
   return (
     <View style={styles.container}>
@@ -62,8 +97,12 @@ const ProfileScreen = () => {
             {uid !== auth().currentUser.uid && (
               <TouchableOpacity
                 onPress={handleFollow}
-                style={styles.followButton}>
-                <Text style={styles.followButtonText}>Follow</Text>
+                style={
+                  isFollowing ? styles.unfollowButton : styles.followButton
+                }>
+                <Text style={styles.followButtonText}>
+                  {isFollowing ? "Unfollow" : "Follow"}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -129,6 +168,16 @@ const styles = StyleSheet.create({
   },
   followButton: {
     backgroundColor: "red",
+    width: "36%",
+    borderRadius: 10,
+    paddingVertical: "2%",
+    paddingHorizontal: "4%",
+    position: "absolute",
+    bottom: "3%",
+    left: "2%",
+  },
+  unfollowButton: {
+    backgroundColor: "grey",
     width: "36%",
     borderRadius: 10,
     paddingVertical: "2%",

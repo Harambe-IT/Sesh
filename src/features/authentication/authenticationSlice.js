@@ -5,6 +5,8 @@ import {LoginManager, AccessToken} from "react-native-fbsdk";
 import {GoogleSignin} from "@react-native-community/google-signin";
 import {googleClientID} from "../../config/keys";
 
+let followingSubscriber;
+
 export const signIn = createAsyncThunk(
   "auth/signIn",
   async (creds, {rejectWithValue}) => {
@@ -220,7 +222,12 @@ const initialState = {
 const authSlice = createSlice({
   name: "auth",
   initialState: initialState,
-  reducers: {reset: (state) => initialState},
+  reducers: {
+    reset: (state) => initialState,
+    updateFollowing: (state, action) => {
+      state.user = {...state.user, following: action.payload};
+    },
+  },
   extraReducers: {
     [signIn.pending]: (state, action) => {
       state.isFetching = true;
@@ -296,5 +303,5 @@ const authSlice = createSlice({
   },
 });
 
-export const {reset} = authSlice.actions;
+export const {reset, updateFollowing} = authSlice.actions;
 export default authSlice.reducer;
