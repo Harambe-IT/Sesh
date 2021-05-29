@@ -5,22 +5,23 @@ import {useDispatch, useSelector} from "react-redux";
 import MapView, {PROVIDER_GOOGLE} from "react-native-maps";
 import {request, PERMISSIONS} from "react-native-permissions";
 import GeoLocation from "@react-native-community/geolocation";
-
 import {createNewPost, resetCreateErrors} from "../../features/posts/postSlice";
 import TextBox from "../Common/TextBox";
 import Button from "../Common/Button";
 import BackArrow from "../navigation/BackArrow";
+import {useNavigation} from "@react-navigation/core";
 
-const CreatePageComponent = ({contentFileType, preview, navigation}) => {
+const latitudeDelta = 1 / (69 * 4);
+const longitudeDelta = 0;
+
+const CreatePageComponent = ({contentFileType, preview}) => {
   const [title, setTitle] = useState("");
   const [fileSource, setFileSource] = useState(null);
   const [initialPosition, setInitialPosition] = useState(null);
   const [region, setRegion] = useState(null);
   const Preview = preview;
-  const latitudeDelta = 1 / (69 * 4);
-  const longitudeDelta = 0;
-
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const {isUploading, errors, uploadPercentage, uploaded} = useSelector(
     (state) => state.posts,
   );
@@ -45,12 +46,8 @@ const CreatePageComponent = ({contentFileType, preview, navigation}) => {
     }
   };
 
-  const requestLocationPermission = async () => {
-    let response = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-
-    if (response === "granted") {
-      locateCurrentPosition();
-    }
+  const extraOnClickHandler = () => {
+    dispatch(resetCreateErrors());
   };
 
   const locateCurrentPosition = () => {
@@ -65,7 +62,7 @@ const CreatePageComponent = ({contentFileType, preview, navigation}) => {
         setInitialPosition(region);
       },
       (error) => console.log(error.message),
-      {enableHighAccuracy: true, timeout: 10000, maximumAge: 1000},
+      {enableHighAccuracy: true, timeout: 10000},
     );
   };
 
@@ -73,9 +70,19 @@ const CreatePageComponent = ({contentFileType, preview, navigation}) => {
     setRegion(region);
   };
 
-  const extraOnClickHandler = () => {
-    dispatch(resetCreateErrors());
-  };
+  useEffect(() => {
+    const requestLocationPermission = async () => {
+      let response = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+
+      if (response === "granted") {
+        locateCurrentPosition();
+      } else {
+        requestLocationPermission();
+      }
+    };
+
+    if (!initialPosition) requestLocationPermission();
+  }, [initialPosition]);
 
   useEffect(() => {
     setTitle("");
@@ -85,37 +92,32 @@ const CreatePageComponent = ({contentFileType, preview, navigation}) => {
     uploaded && navigation.navigate("Explore");
   }, [uploaded]);
 
-  useEffect(() => {
-    requestLocationPermission();
-  }, []);
-
   if (initialPosition) {
     return (
       <View style={styles.container}>
-        <View>
-          <BackArrow
-            navigation={navigation}
-            to="Create"
-            style={styles.backArrow}
-            extraOnClickHandler={extraOnClickHandler}
-          />
-        </View>
+        <BackArrow
+          navigation={navigation}
+          to="Create"
+          style={styles.backArrow}
+          extraOnClickHandler={extraOnClickHandler}
+        />
         {/* <View>
           <Text>{isUploading && uploadPercentage}</Text>
         </View> */}
-        <View>
-          <TouchableOpacity
-            onPress={() =>
-              launchCamera({mediaType: contentFileType}, cameraCallback)
-            }>
-            <Preview style={styles.postFile} fileSource={fileSource} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.previewClickableContainer}
+          onPress={() =>
+            launchCamera({mediaType: contentFileType}, cameraCallback)
+          }>
+          <Preview style={styles.postFile} fileSource={fileSource} />
+        </TouchableOpacity>
+        {errors && <Text style={styles.errorText}>{errors}</Text>}
         <TextBox
           placeholder="Title"
           onChangeText={setTitle}
           placeholderTextColor="grey"
           textColor="black"
+          style={styles.textBox}
           errors={errors?.title || errors?.generic}
         />
         <View style={styles.mapContainer}>
@@ -132,12 +134,11 @@ const CreatePageComponent = ({contentFileType, preview, navigation}) => {
             />
           </View>
         </View>
-
         <Button
           onPress={handleUpload}
           disabled={isUploading}
           text="Post"
-          style={styles.uploadButton}
+          style={styles.uploadButton(isUploading)}
         />
       </View>
     );
@@ -163,21 +164,24 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     borderRadius: 5,
+    marginTop: "10%",
   },
-  uploadButton: {
+  previewClickableContainer: {
+    height: "50%",
+  },
+  uploadButton: (disabled) => ({
     paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 25,
     position: "absolute",
-    top: "100%",
-    left: "100%",
-    marginLeft: -50,
-    marginTop: -30,
-  },
+    top: "90%",
+    left: disabled ? "70%" : "80%",
+  }),
   mapContainer: {
     flex: 1,
   },
   map: {
-    height: 220,
+    height: "100%",
     width: 400,
   },
   markerImage: {
@@ -193,6 +197,16 @@ const styles = StyleSheet.create({
   },
   backArrow: {
     position: "absolute",
-    left: -200,
+    top: "2%",
+    left: "2%",
+  },
+  textBox: {
+    width: "100%",
+    textAlign: "center",
+    backgroundColor: "rgb(250, 250, 250)",
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  errorText: {
+    color: "red",
   },
 });

@@ -5,13 +5,13 @@ import {useDispatch, useSelector} from "react-redux";
 import MapView, {PROVIDER_GOOGLE} from "react-native-maps";
 import {request, PERMISSIONS} from "react-native-permissions";
 import GeoLocation from "@react-native-community/geolocation";
-
 import {createNewSpot, resetCreateErrors} from "../../features/posts/postSlice";
 import TextBox from "../../components/Common/TextBox";
 import Button from "../../components/Common/Button";
 import BackArrow from "../../components/navigation/BackArrow";
 
 const CreateSpotScreen = ({navigation}) => {
+  const history = useHistory();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [fileSource, setFileSource] = useState(null);
@@ -21,9 +21,13 @@ const CreateSpotScreen = ({navigation}) => {
   const longitudeDelta = 0;
 
   const dispatch = useDispatch();
-  const {isUploading, errors, uploadPercentage, uploaded} = useSelector(
-    (state) => state.posts,
-  );
+  const {
+    isUploading,
+    errors,
+    uploadPercentage,
+    uploaded,
+    isFetching,
+  } = useSelector((state) => state.posts);
 
   const cameraCallback = (response) => {
     if (!response.didCancel && !response.error) {
@@ -47,12 +51,8 @@ const CreateSpotScreen = ({navigation}) => {
     }
   };
 
-  const requestLocationPermission = async () => {
-    let response = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-
-    if (response === "granted") {
-      locateCurrentPosition();
-    }
+  const extraOnClickHandler = () => {
+    dispatch(resetCreateErrors());
   };
 
   const locateCurrentPosition = () => {
@@ -67,7 +67,7 @@ const CreateSpotScreen = ({navigation}) => {
         setInitialPosition(region);
       },
       (error) => console.log(error.message),
-      {enableHighAccuracy: true, timeout: 10000, maximumAge: 1000},
+      {enableHighAccuracy: true, timeout: 10000},
     );
   };
 
@@ -75,9 +75,19 @@ const CreateSpotScreen = ({navigation}) => {
     setRegion(region);
   };
 
-  const extraOnClickHandler = () => {
-    dispatch(resetCreateErrors());
-  };
+  useEffect(() => {
+    const requestLocationPermission = async () => {
+      let response = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+
+      if (response === "granted") {
+        locateCurrentPosition();
+      } else {
+        requestLocationPermission();
+      }
+    };
+
+    requestLocationPermission();
+  }, []);
 
   useEffect(() => {
     setTitle("");
@@ -88,50 +98,41 @@ const CreateSpotScreen = ({navigation}) => {
     uploaded && navigation.navigate("Explore");
   }, [uploaded]);
 
-  useEffect(() => {
-    requestLocationPermission();
-  }, []);
-
   if (initialPosition) {
     return (
       <View style={styles.container}>
-        <View>
-          <BackArrow
-            navigation={navigation}
-            to="Create"
-            style={styles.backArrow}
-            extraOnClickHandler={extraOnClickHandler}
+        <BackArrow
+          navigation={navigation}
+          to="Create"
+          style={styles.backArrow}
+          extraOnClickHandler={extraOnClickHandler}
+        />
+        <TouchableOpacity
+          style={styles.previewClickableContainer}
+          onPress={() => launchCamera({mediaType: "Image"}, cameraCallback)}>
+          <Image
+            style={styles.postFile}
+            source={
+              fileSource
+                ? {uri: fileSource.uri}
+                : require("../../assets/images/createContent/icon_pictures.png")
+            }
           />
-        </View>
-        {/* <View>
-          <Text>{isUploading && uploadPercentage}</Text>
-        </View> */}
-        <View>
-          <TouchableOpacity
-            onPress={() => launchCamera({mediaType: "Image"}, cameraCallback)}>
-            <Image
-              style={styles.postFile}
-              source={
-                fileSource
-                  ? {uri: fileSource.uri}
-                  : require("../../assets/images/createContent/icon_pictures.png")
-              }
-            />
-          </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
+        {errors && <Text style={styles.errorText}>{errors}</Text>}
         <TextBox
           placeholder="Title"
           onChangeText={setTitle}
           placeholderTextColor="grey"
           textColor="black"
-          errors={errors?.title}
+          style={styles.textBox}
         />
         <TextBox
           placeholder="Description"
           onChangeText={setDescription}
           placeholderTextColor="grey"
           textColor="black"
-          errors={errors?.description || errors?.generic}
+          style={styles.textBox}
         />
         <View style={styles.mapContainer}>
           <MapView
@@ -147,10 +148,9 @@ const CreateSpotScreen = ({navigation}) => {
             />
           </View>
         </View>
-
         <Button
           onPress={handleUpload}
-          disabled={isUploading}
+          disabled={isUploading || isFetching}
           text="Post"
           style={styles.uploadButton}
         />
@@ -178,21 +178,24 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     borderRadius: 5,
+    marginTop: "10%",
+  },
+  previewClickableContainer: {
+    height: "50%",
   },
   uploadButton: {
     paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 25,
     position: "absolute",
-    top: "100%",
-    left: "100%",
-    marginLeft: -50,
-    marginTop: -30,
+    top: "90%",
+    left: "80%",
   },
   mapContainer: {
     flex: 1,
   },
   map: {
-    height: 220,
+    height: "100%",
     width: 400,
   },
   markerImage: {
@@ -208,6 +211,16 @@ const styles = StyleSheet.create({
   },
   backArrow: {
     position: "absolute",
-    left: -200,
+    top: "2%",
+    left: "2%",
+  },
+  textBox: {
+    width: "100%",
+    textAlign: "center",
+    backgroundColor: "rgb(250, 250, 250)",
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  errorText: {
+    color: "red",
   },
 });

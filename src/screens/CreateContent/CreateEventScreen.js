@@ -1,12 +1,8 @@
-import React from 'react';
-import {View, Text} from 'react-native';
+import React from "react";
+import NotImplemented from "../../components/Common/NotImplemented";
 
 const CreateEventScreen = () => {
-  return (
-    <View>
-      <Text>Create Event Screen</Text>
-    </View>
-  );
+  return <NotImplemented />;
 };
 
 export default CreateEventScreen;

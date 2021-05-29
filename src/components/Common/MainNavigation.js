@@ -28,7 +28,19 @@ const TabScreens = () => {
       <Tab.Screen name="Discover" component={DiscoverScreen} />
       <Tab.Screen name="Create" component={CreationNavigationStack} />
       <Tab.Screen name="Activity" component={ActivityScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        listeners={({navigation, route}) => ({
+          tabPress: (e) => {
+            // Prevent default action
+            e.preventDefault();
+
+            // Do something with the `navigation` object
+            navigation.navigate("Profile", {uid: null});
+          },
+        })}
+      />
     </Tab.Navigator>
   );
 };

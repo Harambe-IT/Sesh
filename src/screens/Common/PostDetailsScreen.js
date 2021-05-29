@@ -34,7 +34,7 @@ const PostDetailsScreen = () => {
       .collection("reactions")
       .orderBy("createdOn", "desc")
       .onSnapshot((snapshot) => {
-        if (snapshot.empty) dispatch(updateFollowing([]));
+        if (snapshot.empty) dispatch(updateComments([]));
 
         let reactions = [];
         let reactionPromises = [];

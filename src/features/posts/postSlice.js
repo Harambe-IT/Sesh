@@ -8,19 +8,16 @@ const MAX_DELTA = 100 / 1104; // Around 100km
 export const createNewPost = createAsyncThunk(
   "posts/create",
   async (post, {rejectWithValue}) => {
-    let errorObject = {};
     let uid = auth().currentUser.uid || null;
-    if (!uid) errorObject.generic = "User wasn't authenticated";
+    if (!uid) return rejectWithValue("User wasn't authenticated");
     if (!post.fileSource)
-      errorObject.generic =
-        "Provide a picture or video before trying to post anything.";
+      return rejectWithValue(
+        "Provide a picture or video before trying to post anything.",
+      );
     if (!post.title || post.title.trim() === "")
-      errorObject.title = "Provide a title, please.";
+      return rejectWithValue("Provide a title, please.");
     if (!post.region)
-      errorObject.generic = "Enable location to post a new picture/video.";
-
-    if (Object.keys(errorObject).length > 0)
-      return rejectWithValue(errorObject);
+      return rejectWithValue("Enable location to post a new picture/video.");
 
     let postFileReference = storage().ref(`/${uid}/${post.fileSource.name}`);
     let uploadTask = postFileReference.putFile(post.fileSource.uri);
@@ -60,21 +57,21 @@ export const createNewPost = createAsyncThunk(
 export const createNewSpot = createAsyncThunk(
   "posts/createSpot",
   async (spot, {rejectWithValue}) => {
-    let errorObject = {};
     let uid = auth().currentUser.uid || null;
-    if (!uid) errorObject.generic = "User wasn't authenticated";
+    if (!uid) return rejectWithValue("User wasn't authenticated");
     if (!spot.fileSource)
-      errorObject.generic =
-        "Provide a picture or video before trying to post anything.";
+      return rejectWithValue(
+        "Provide a picture or video before trying to post anything.",
+      );
     if (!spot.title || spot.title.trim() === "")
-      errorObject.title = "Provide a title, please.";
+      return rejectWithValue("Provide a title, please.");
     if (!spot.description || spot.description.trim() === "")
-      errorObject.description = "Provide a description, please.";
+      return rejectWithValue("Provide a description, please.");
     if (!spot.region)
-      errorObject.generic = "Enable location to post a new picture/video.";
+      return rejectWithValue("Enable location to post a new spot.");
 
-    if (Object.keys(errorObject).length > 0)
-      return rejectWithValue(errorObject);
+    if (!spot.region)
+      return rejectWithValue("Enable location to post a new picture/video.");
 
     let spotFileReference = storage().ref(`/${uid}/${spot.fileSource.name}`);
     let uploadTask = spotFileReference.putFile(spot.fileSource.uri);
@@ -98,7 +95,7 @@ export const createNewSpot = createAsyncThunk(
             createdOn: firestore.FieldValue.serverTimestamp(),
             owner: firestore().collection("users").doc(uid),
             title: spot.title.trim(),
-            type: "picture",
+            type: "spot",
             location: {...spot.region},
           });
       })
@@ -119,7 +116,6 @@ export const getPostsByUser = createAsyncThunk(
     return firestore()
       .collection("posts")
       .where("owner", "==", user)
-      .orderBy("createdOn")
       .get()
       .then(async (snapshot) => {
         let posts = [];
@@ -165,7 +161,9 @@ export const getPostsByUser = createAsyncThunk(
         });
 
         return Promise.all(promises).then(() => {
-          return posts;
+          return posts.sort((a, b) => {
+            return b.createdOn - a.createdOn;
+          });
         });
       })
       .catch((err) => {
@@ -182,7 +180,6 @@ export const getSpotsByUser = createAsyncThunk(
     return firestore()
       .collection("spots")
       .where("owner", "==", user)
-      .orderBy("createdOn")
       .get()
       .then(async (snapshot) => {
         let spots = [];
@@ -228,7 +225,9 @@ export const getSpotsByUser = createAsyncThunk(
         });
 
         return Promise.all(promises).then(() => {
-          return spots;
+          return spots.sort((a, b) => {
+            return b.createdOn - a.createdOn;
+          });
         });
       })
       .catch((err) => {
@@ -250,7 +249,6 @@ export const getFollowingPosts = createAsyncThunk(
     return firestore()
       .collection("posts")
       .where("owner", "in", uids)
-      .orderBy("createdOn")
       .get()
       .then(async (snapshot) => {
         let posts = [];
@@ -294,7 +292,15 @@ export const getFollowingPosts = createAsyncThunk(
         });
 
         return Promise.all(promises).then(() => {
-          return posts;
+          let temp = posts.sort((a, b) => {
+            return b.createdOn - a.createdOn;
+          });
+
+          temp.forEach((post) => {
+            console.log(post.contentUrl);
+          });
+
+          return temp;
         });
       })
       .catch((err) => {
@@ -371,7 +377,9 @@ export const getAllPostsByRegion = createAsyncThunk(
         });
 
         return Promise.all(promises).then(() => {
-          return posts;
+          return posts.sort((a, b) => {
+            return b.createdOn - a.createdOn;
+          });
         });
       })
       .catch((err) => {
@@ -448,7 +456,9 @@ export const getAllSpotsByRegion = createAsyncThunk(
         });
 
         return Promise.all(promises).then(() => {
-          return spots;
+          return spots.sort((a, b) => {
+            return b.createdOn - a.createdOn;
+          });
         });
       })
       .catch((err) => {
@@ -463,6 +473,7 @@ export const getPostById = createAsyncThunk(
     return firestore()
       .collection("posts")
       .doc(docId)
+      .orderBy("createdOn", "desc")
       .get()
       .then(async (doc) => {
         let tempPost = {
@@ -587,7 +598,7 @@ const uploadProgressChanged = createAsyncThunk(
   "posts/uploadProgressChanged",
   async (progress, {rejectWithValue}) => {
     if (progress) return progress;
-    else rejectWithValue("Percentage could not be shown.");
+    else return rejectWithValue("Percentage could not be shown.");
   },
 );
 
@@ -689,7 +700,7 @@ const postSlice = createSlice({
     },
     [createNewPost.rejected]: (state, action) => {
       state.isUploading = false;
-      state.errors = action.payload;
+      state.errors = "The upload failed. Try again later";
     },
     [createNewPost.fulfilled]: (state, action) => {
       state.isUploading = false;
@@ -707,6 +718,7 @@ const postSlice = createSlice({
       state.isUploading = false;
       state.uploadPercentage = null;
       state.uploaded = action.payload;
+      state.errors = null;
     },
     [uploadProgressChanged.rejected]: (state, action) => {
       state.errors = action.payload;
