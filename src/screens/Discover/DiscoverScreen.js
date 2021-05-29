@@ -50,8 +50,8 @@ const DiscoverScreen = () => {
       }
     };
 
-    requestLocationPermission();
-  }, []);
+    if (!initialPosition) requestLocationPermission();
+  }, [initialPosition]);
 
   const handleGetNewPosts = () => {
     dispatch(getAllPostsByRegion(region));

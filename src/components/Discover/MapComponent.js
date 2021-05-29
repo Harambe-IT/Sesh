@@ -1,7 +1,19 @@
-import React, {useEffect, useState} from 'react';
-import {Text, View, StyleSheet} from 'react-native';
-import MapView, {PROVIDER_GOOGLE, Marker, Callout} from 'react-native-maps';
-import {WebView} from 'react-native-webview';
+import React, {useEffect, useState} from "react";
+import {Text, View, StyleSheet, Image} from "react-native";
+import MapView, {PROVIDER_GOOGLE, Marker, Callout} from "react-native-maps";
+import {WebView} from "react-native-webview";
+
+import SpotPin from "../../assets/images/createContent/pin_spot.png";
+import VideoPin from "../../assets/images/createContent/pin_video.png";
+import PicturePin from "../../assets/images/createContent/pin_picture.png";
+
+const PinIcon = ({source}) => {
+  return (
+    <View style={styles.pin}>
+      <Image source={source} style={styles.pin} />
+    </View>
+  );
+};
 
 const MapComponent = ({
   handleRegionChange,
@@ -15,6 +27,9 @@ const MapComponent = ({
       setMarkers(
         postsByLocation.map((post) => {
           const {contentUrl, location, docId, title, type, owner} = post;
+          const pinIcon =
+            type === "clip" ? VideoPin : type === "spot" ? SpotPin : PicturePin;
+
           return (
             <Marker
               key={docId}
@@ -22,13 +37,14 @@ const MapComponent = ({
                 latitude: location.latitude,
                 longitude: location.longitude,
               }}>
+              <PinIcon source={pinIcon} />
               <Callout>
                 <View>
                   <View style={styles.markerContainer}>
                     <Text style={styles.markerTitle}>{title}</Text>
                     <Text
                       style={styles.markerOwner}>{`By ${owner.username}`}</Text>
-                    {type === 'clip' ? (
+                    {type === "clip" ? (
                       <Text>The video is available in the list view</Text>
                     ) : (
                       <WebView
@@ -80,11 +96,15 @@ const styles = StyleSheet.create({
   },
   markerTitle: {
     fontSize: 17,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   markerOwner: {
     fontSize: 10,
-    fontWeight: '100',
-    fontStyle: 'italic',
+    fontWeight: "100",
+    fontStyle: "italic",
+  },
+  pin: {
+    height: 50,
+    width: 32.26,
   },
 });
