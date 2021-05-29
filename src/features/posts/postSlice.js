@@ -296,10 +296,6 @@ export const getFollowingPosts = createAsyncThunk(
             return b.createdOn - a.createdOn;
           });
 
-          temp.forEach((post) => {
-            console.log(post.contentUrl);
-          });
-
           return temp;
         });
       })
@@ -473,7 +469,6 @@ export const getPostById = createAsyncThunk(
     return firestore()
       .collection("posts")
       .doc(docId)
-      .orderBy("createdOn", "desc")
       .get()
       .then(async (doc) => {
         let tempPost = {
