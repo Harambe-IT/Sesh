@@ -1,26 +1,25 @@
-import React, {useEffect} from "react";
+import auth from "@react-native-firebase/auth";
 import {NavigationContainer} from "@react-navigation/native";
 import {createStackNavigator} from "@react-navigation/stack";
-
-import {useSelector, useDispatch} from "react-redux";
+import React, {useEffect} from "react";
+import {StatusBar, View, Text} from "react-native";
+import {useDispatch, useSelector} from "react-redux";
+import AuthenticatedNavigation from "./src/components/Common/MainNavigation";
 import {
   authChanged,
   reset as resetAuth,
 } from "./src/features/authentication/authenticationSlice";
 import {reset as resetPosts} from "./src/features/posts/postSlice";
 import {reset as resetProfile} from "./src/features/profile/profileSlice";
-import auth from "@react-native-firebase/auth";
-
 import LoginScreen from "./src/screens/Authentication/LoginScreen";
 import RegisterScreen from "./src/screens/Authentication/RegisterScreen";
-import AuthenticatedNavigation from "./src/components/Common/MainNavigation";
 import ResetPasswordScreen from "./src/screens/Authentication/ResetPassword";
-import {StatusBar} from "react-native";
+import LoadingScreen from "./src/screens/Common/LoadingScreen";
 
 const Stack = createStackNavigator();
 
 const App = () => {
-  const {user} = useSelector((state) => state.auth);
+  const {user, isFetching} = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   const handleAuthChange = async (user) => {
@@ -37,7 +36,9 @@ const App = () => {
     return subscriber;
   }, []);
 
-  return (
+  return isFetching ? (
+    <LoadingScreen />
+  ) : (
     <NavigationContainer>
       <StatusBar hidden />
       {user !== null ? (

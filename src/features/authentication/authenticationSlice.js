@@ -5,8 +5,6 @@ import {LoginManager, AccessToken} from "react-native-fbsdk";
 import {GoogleSignin} from "@react-native-community/google-signin";
 import {googleClientID} from "../../config/keys";
 
-let followingSubscriber;
-
 export const signIn = createAsyncThunk(
   "auth/signIn",
   async (creds, {rejectWithValue}) => {
