@@ -6,6 +6,7 @@ import TabBarIcon from "../../components/navigation/TabBarIcon";
 import ActivityScreen from "../../screens/Activity/ActivityScreen";
 import CreationNavigationStack from "../../screens/CreateContent/CreationNavigationScreen";
 import PostDetailsScreen from "../../screens/Common/PostDetailsScreen";
+import SpotDetailsScreen from "../../screens/Common/SpotDetailsScreen";
 import DiscoverScreen from "../../screens/Discover/DiscoverScreen";
 import ExploreScreen from "../../screens/Explore/ExploreScreen";
 import Conversations from "../../screens/Messages/Conversations";
@@ -59,6 +60,7 @@ const MainNavigation = () => {
       />
       <Stack.Screen name="Conversations" component={Conversations} />
       <Stack.Screen name="Post Details" component={PostDetailsScreen} />
+      <Stack.Screen name="Spot Details" component={SpotDetailsScreen} />
     </Stack.Navigator>
   );
 };

@@ -4,6 +4,7 @@ import Video from "react-native-video";
 
 const PostPreviewComponent = ({style, source, type}) => {
   let player;
+
   return (
     <View style={styles.container}>
       {type === "clip" ? (

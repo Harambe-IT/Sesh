@@ -4,13 +4,16 @@ import {useDispatch, useSelector} from "react-redux";
 import {request, PERMISSIONS} from "react-native-permissions";
 import GeoLocation from "@react-native-community/geolocation";
 
-import {getAllPostsByRegion} from "../../features/posts/postSlice";
+import {
+  getAllPostsByRegion,
+  getAllSpotsByRegion,
+} from "../../features/posts/postSlice";
 import MapComponent from "../../components/Discover/MapComponent";
 import ListComponent from "../../components/Discover/ListComponent";
 
 const DiscoverScreen = () => {
   const dispatch = useDispatch();
-  const {isFetching, errors, postsByLocation} = useSelector(
+  const {isFetching, errors, postsByLocation, spotsByLocation} = useSelector(
     (state) => state.posts,
   );
   const [viewMap, setViewMap] = useState(true);
@@ -55,11 +58,13 @@ const DiscoverScreen = () => {
 
   const handleGetNewPosts = () => {
     dispatch(getAllPostsByRegion(region));
+    dispatch(getAllSpotsByRegion(region));
   };
 
   useEffect(() => {
     if (region) {
-      handleGetNewPosts();
+      dispatch(getAllPostsByRegion(region));
+      dispatch(getAllSpotsByRegion(region));
     }
   }, [region]);
 
@@ -91,6 +96,7 @@ const DiscoverScreen = () => {
         <MapComponent
           handleRegionChange={handleRegionChange}
           postsByLocation={postsByLocation}
+          spotsByLocation={spotsByLocation}
           initialPosition={initialPosition}
         />
       ) : (

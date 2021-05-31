@@ -4,7 +4,53 @@ import firestore from "@react-native-firebase/firestore";
 export const getUserProfile = createAsyncThunk(
   "profile/getById",
   async (uid, {rejectWithValue}) => {
-    return firestore()
+    let user = {};
+
+    let userFollowingTask = firestore()
+      .collection("followers")
+      .where("followedById", "==", uid)
+      .get()
+      .then((snapshot) => {
+        let following = [];
+        snapshot.forEach((doc) => {
+          following.push({
+            docId: doc.id,
+            ...doc.data(),
+          });
+        });
+
+        return following;
+      })
+      .then((following) => {
+        user.following = following;
+      })
+      .catch((err) => {
+        return rejectWithValue(err);
+      });
+
+    let userFollowedByTask = firestore()
+      .collection("followers")
+      .where("followedId", "==", uid)
+      .get()
+      .then((snapshot) => {
+        let followedBy = [];
+        snapshot.forEach((doc) => {
+          followedBy.push({
+            docId: doc.id,
+            ...doc.data(),
+          });
+        });
+
+        return followedBy;
+      })
+      .then((followedBy) => {
+        user.followedBy = followedBy;
+      })
+      .catch((err) => {
+        return rejectWithValue(err);
+      });
+
+    let userDetailsTask = firestore()
       .collection("users")
       .doc(uid)
       .get()
@@ -14,6 +60,17 @@ export const getUserProfile = createAsyncThunk(
           ...doc.data(),
           createdOn: doc.data()?.createdOn.seconds,
         };
+      })
+      .then((userData) => {
+        user = {...user, ...userData};
+      })
+      .catch((err) => {
+        return rejectWithValue(err);
+      });
+
+    return Promise.all([userDetailsTask, userFollowedByTask, userFollowingTask])
+      .then(() => {
+        return user;
       })
       .catch((err) => {
         return rejectWithValue(err);
