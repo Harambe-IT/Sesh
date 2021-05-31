@@ -1,16 +1,20 @@
-import React, {useEffect} from 'react';
-import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
-
-import {useSelector, useDispatch} from 'react-redux';
-import {authChanged} from './src/features/authentication/authenticationSlice';
-import auth from '@react-native-firebase/auth';
-
-import LoadingScreen from './src/screens/Common/LoadingScreen';
-import LoginScreen from './src/screens/Authentication/LoginScreen';
-import RegisterScreen from './src/screens/Authentication/RegisterScreen';
-import AuthenticatedNavigation from './src/components/Common/MainNavigation';
-import ResetPasswordScreen from './src/screens/Authentication/ResetPassword';
+import auth from "@react-native-firebase/auth";
+import {NavigationContainer} from "@react-navigation/native";
+import {createStackNavigator} from "@react-navigation/stack";
+import React, {useEffect} from "react";
+import {StatusBar, View, Text} from "react-native";
+import {useDispatch, useSelector} from "react-redux";
+import AuthenticatedNavigation from "./src/components/Common/MainNavigation";
+import {
+  authChanged,
+  reset as resetAuth,
+} from "./src/features/authentication/authenticationSlice";
+import {reset as resetPosts} from "./src/features/posts/postSlice";
+import {reset as resetProfile} from "./src/features/profile/profileSlice";
+import LoginScreen from "./src/screens/Authentication/LoginScreen";
+import RegisterScreen from "./src/screens/Authentication/RegisterScreen";
+import ResetPasswordScreen from "./src/screens/Authentication/ResetPassword";
+import LoadingScreen from "./src/screens/Common/LoadingScreen";
 
 const Stack = createStackNavigator();
 
@@ -19,6 +23,11 @@ const App = () => {
   const dispatch = useDispatch();
 
   const handleAuthChange = async (user) => {
+    if (!user) {
+      dispatch(resetAuth());
+      dispatch(resetPosts());
+      dispatch(resetProfile());
+    }
     dispatch(authChanged(user));
   };
 
@@ -27,9 +36,11 @@ const App = () => {
     return subscriber;
   }, []);
 
-  if (isFetching) return <LoadingScreen />;
-  return (
+  return isFetching ? (
+    <LoadingScreen />
+  ) : (
     <NavigationContainer>
+      <StatusBar hidden />
       {user !== null ? (
         <AuthenticatedNavigation />
       ) : (

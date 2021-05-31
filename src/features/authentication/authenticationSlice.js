@@ -1,15 +1,15 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
-import {LoginManager, AccessToken} from 'react-native-fbsdk';
-import {GoogleSignin} from '@react-native-community/google-signin';
-import {googleClientID} from '../../config/keys';
+import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
+import {LoginManager, AccessToken} from "react-native-fbsdk";
+import {GoogleSignin} from "@react-native-community/google-signin";
+import {googleClientID} from "../../config/keys";
 
 export const signIn = createAsyncThunk(
-  'auth/signIn',
+  "auth/signIn",
   async (creds, {rejectWithValue}) => {
-    if (creds.email.trim() === '' || creds.password.trim() === '')
-      return rejectWithValue('Please fill in your password and/or email');
+    if (creds.email.trim() === "" || creds.password.trim() === "")
+      return rejectWithValue("Please fill in your password and email");
     return auth()
       .signInWithEmailAndPassword(creds.email, creds.password)
       .then((response) => {
@@ -22,19 +22,19 @@ export const signIn = createAsyncThunk(
 );
 
 export const signInFacebook = createAsyncThunk(
-  'auth/signInFacebook',
+  "auth/signInFacebook",
   async (empty, {rejectWithValue}) => {
-    return LoginManager.logInWithPermissions(['public_profile', 'email'])
+    return LoginManager.logInWithPermissions(["public_profile", "email"])
       .then((result) => {
         if (result.isCancelled) {
-          throw rejectWithValue('User cancled operation.');
+          throw rejectWithValue("User cancled operation.");
         }
 
         return AccessToken.getCurrentAccessToken();
       })
       .then((data) => {
         if (!data) {
-          throw new Error('Something went wrong obtaining access token.');
+          throw new Error("Something went wrong obtaining access token.");
         }
 
         const facebookCredential = auth.FacebookAuthProvider.credential(
@@ -48,7 +48,7 @@ export const signInFacebook = createAsyncThunk(
 
         if (additionalUserInfo.isNewUser) {
           await firestore()
-            .collection('users')
+            .collection("users")
             .doc(user.uid)
             .set({
               createdOn: firestore.FieldValue.serverTimestamp(),
@@ -65,7 +65,7 @@ export const signInFacebook = createAsyncThunk(
 );
 
 export const signInGoogle = createAsyncThunk(
-  'auth/signInGoogle',
+  "auth/signInGoogle",
   async (empty, {rejectWithValue}) => {
     GoogleSignin.configure({
       webClientId: googleClientID,
@@ -89,16 +89,15 @@ export const signInGoogle = createAsyncThunk(
 );
 
 export const signUp = createAsyncThunk(
-  'auth/signUp',
+  "auth/signUp",
   async (user, {rejectWithValue}) => {
     if (
-      user.email.trim() === '' ||
-      user.password.trim() === '' ||
-      user.username.trim() === ''
-    )
-      return rejectWithValue(
-        'Please fill in a password, email and/or username.',
-      );
+      user.email.trim() === "" ||
+      user.password.trim() === "" ||
+      user.username.trim() === ""
+    ) {
+      return rejectWithValue("Please fill in a password, email and username.");
+    }
     return auth()
       .createUserWithEmailAndPassword(user.email, user.password)
       .then((result) => {
@@ -107,7 +106,7 @@ export const signUp = createAsyncThunk(
         });
 
         let promise2 = firestore()
-          .collection('users')
+          .collection("users")
           .doc(result.user.uid)
           .set({
             createdOn: firestore.FieldValue.serverTimestamp(),
@@ -123,8 +122,12 @@ export const signUp = createAsyncThunk(
 );
 
 export const resetPassword = createAsyncThunk(
-  'auth/resetPassword',
+  "auth/resetPassword",
   async (email, {rejectWithValue}) => {
+    if (email.trim() === "") {
+      return rejectWithValue("Please fill in an email.");
+    }
+
     return auth()
       .sendPasswordResetEmail(email)
       .then(() => {
@@ -137,12 +140,12 @@ export const resetPassword = createAsyncThunk(
 );
 
 export const authChanged = createAsyncThunk(
-  'auth/authChanged',
+  "auth/authChanged",
   async (user, {rejectWithValue}) => {
     let userData = {};
 
     let userProfileTask = firestore()
-      .collection('users')
+      .collection("users")
       .doc(user.uid)
       .get()
       .then((doc) => {
@@ -156,8 +159,8 @@ export const authChanged = createAsyncThunk(
       });
 
     let userFollowingTask = firestore()
-      .collection('followers')
-      .where('followedById', '==', user.uid)
+      .collection("followers")
+      .where("followedById", "==", user.uid)
       .get()
       .then((snapshot) => {
         let following = [];
@@ -175,8 +178,8 @@ export const authChanged = createAsyncThunk(
       });
 
     let userFollowedByTask = firestore()
-      .collection('followers')
-      .where('followedId', '==', user.uid)
+      .collection("followers")
+      .where("followedId", "==", user.uid)
       .get()
       .then((snapshot) => {
         let followedBy = [];
@@ -205,17 +208,24 @@ export const authChanged = createAsyncThunk(
   },
 );
 
+const initialState = {
+  isFetching: true,
+  user: null,
+  loginErrors: null,
+  signUpErrors: null,
+  resetPasswordErrors: null,
+  resetPasswordConfirmation: null,
+};
+
 const authSlice = createSlice({
-  name: 'auth',
-  initialState: {
-    isFetching: true,
-    user: null,
-    loginErrors: null,
-    signUpErrors: null,
-    resetPasswordErrors: null,
-    resetPasswordConfirmation: null,
+  name: "auth",
+  initialState: initialState,
+  reducers: {
+    reset: (state) => initialState,
+    updateFollowing: (state, action) => {
+      state.user = {...state.user, following: action.payload};
+    },
   },
-  reducers: {},
   extraReducers: {
     [signIn.pending]: (state, action) => {
       state.isFetching = true;
@@ -224,16 +234,16 @@ const authSlice = createSlice({
       state.isFetching = false;
       state.user = null;
 
-      if (action.payload.includes('auth/invalid-email'))
+      if (action.payload.includes("auth/invalid-email"))
         state.loginErrors =
-          'The email address is not valid.\nProvide a valid email address when trying to login.';
-      else if (action.payload.includes('auth/user-disabled'))
+          "The email address is not valid.\nProvide a valid email address when trying to login.";
+      else if (action.payload.includes("auth/user-disabled"))
         state.loginErrors =
           "The account you're trying to login to is disabled.\nContact support for more information.";
-      else if (action.payload.includes('auth/user-not-found'))
-        state.loginErrors = 'Email and/or password were incorrect.';
-      else if (action.payload.includes('auth/wrong-password'))
-        state.loginErrors = 'Email and/or password were incorrect.';
+      else if (action.payload.includes("auth/user-not-found"))
+        state.loginErrors = "Email and/or password were incorrect.";
+      else if (action.payload.includes("auth/wrong-password"))
+        state.loginErrors = "Email and/or password were incorrect.";
       else state.loginErrors = action.payload;
     },
     [signUp.pending]: (state, action) => {
@@ -243,16 +253,16 @@ const authSlice = createSlice({
       state.isFetching = false;
       state.user = null;
 
-      if (action.payload.includes('auth/invalid-email'))
+      if (action.payload.includes("auth/invalid-email"))
         state.signUpErrors =
-          'The email address is not valid.\nProvide a valid email address when trying to login.';
-      else if (action.payload.includes('auth/user-disabled'))
+          "The email address is not valid.\nProvide a valid email address when trying to login.";
+      else if (action.payload.includes("auth/user-disabled"))
         state.signUpErrors =
           "The account you're trying to login to is disabled.\nContact support for more information.";
-      else if (action.payload.includes('auth/user-not-found'))
-        state.signUpErrors = 'Email and/or password were incorrect.';
-      else if (action.payload.includes('auth/wrong-password'))
-        state.signUpErrors = 'Email and/or password were incorrect.';
+      else if (action.payload.includes("auth/user-not-found"))
+        state.signUpErrors = "Email and/or password were incorrect.";
+      else if (action.payload.includes("auth/wrong-password"))
+        state.signUpErrors = "Email and/or password were incorrect.";
       else state.signUpErrors = action.payload;
     },
     [authChanged.pending]: (state, action) => {
@@ -270,7 +280,26 @@ const authSlice = createSlice({
     [authChanged.rejected]: (state, action) => {
       state.isFetching = false;
     },
+    [resetPassword.pending]: (state, action) => {
+      state.isFetching = true;
+      state.resetPasswordErrors = null;
+      state.resetPasswordConfirmation = null;
+    },
+    [resetPassword.fulfilled]: (state, action) => {
+      state.isFetching = false;
+      state.resetPasswordConfirmation = action.payload;
+    },
+    [resetPassword.rejected]: (state, action) => {
+      state.isFetching = false;
+      if (action.payload.includes("auth/invalid-email"))
+        state.resetPasswordErrors =
+          "The email address is not valid.\nProvide a valid email address when trying to reset your password.";
+      else if (action.payload.includes("auth/user-not-found"))
+        state.resetPasswordErrors = "No user found with that email address.";
+      else state.resetPasswordErrors = action.payload;
+    },
   },
 });
 
+export const {reset, updateFollowing} = authSlice.actions;
 export default authSlice.reducer;

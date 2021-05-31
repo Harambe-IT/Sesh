@@ -1,12 +1,12 @@
-import React, {useState, useEffect} from 'react';
-import {View, Button, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
-import {request, PERMISSIONS} from 'react-native-permissions';
-import GeoLocation from '@react-native-community/geolocation';
+import React, {useState, useEffect} from "react";
+import {View, Button, Text, TouchableOpacity, StyleSheet} from "react-native";
+import {useDispatch, useSelector} from "react-redux";
+import {request, PERMISSIONS} from "react-native-permissions";
+import GeoLocation from "@react-native-community/geolocation";
 
-import {getAllPostsByRegion} from '../../features/posts/postSlice';
-import MapComponent from '../../components/Discover/MapComponent';
-import ListComponent from '../../components/Discover/ListComponent';
+import {getAllPostsByRegion} from "../../features/posts/postSlice";
+import MapComponent from "../../components/Discover/MapComponent";
+import ListComponent from "../../components/Discover/ListComponent";
 
 const DiscoverScreen = () => {
   const dispatch = useDispatch();
@@ -18,14 +18,6 @@ const DiscoverScreen = () => {
   const [region, setRegion] = useState(null);
   const latitudeDelta = 1 / 110.4; // Around 1km viewdistance
   const longitudeDelta = 0;
-
-  const requestLocationPermission = async () => {
-    let response = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-
-    if (response === 'granted') {
-      locateCurrentPosition();
-    }
-  };
 
   const locateCurrentPosition = () => {
     GeoLocation.getCurrentPosition(
@@ -39,7 +31,7 @@ const DiscoverScreen = () => {
         setInitialPosition(region);
       },
       (error) => console.log(error.message),
-      {enableHighAccuracy: true, timeout: 10000, maximumAge: 1000},
+      {enableHighAccuracy: true, timeout: 10000},
     );
   };
 
@@ -48,8 +40,18 @@ const DiscoverScreen = () => {
   };
 
   useEffect(() => {
-    requestLocationPermission();
-  }, []);
+    const requestLocationPermission = async () => {
+      let response = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+
+      if (response === "granted") {
+        locateCurrentPosition();
+      } else {
+        requestLocationPermission();
+      }
+    };
+
+    if (!initialPosition) requestLocationPermission();
+  }, [initialPosition]);
 
   const handleGetNewPosts = () => {
     dispatch(getAllPostsByRegion(region));
@@ -72,7 +74,7 @@ const DiscoverScreen = () => {
           onPress={handlePageChange}
           style={[
             viewMap ? styles.navButtonFocused : styles.navButton,
-            {marginLeft: 'auto', marginRight: 5},
+            {marginLeft: "auto", marginRight: 5},
           ]}>
           <Text>Map</Text>
         </TouchableOpacity>
@@ -109,25 +111,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   navigationalHeader: {
-    position: 'absolute',
-    flexDirection: 'row',
+    position: "absolute",
+    flexDirection: "row",
     marginBottom: 10,
     marginTop: 10,
-    width: '100%',
+    width: "100%",
     zIndex: 100,
   },
   navButton: {
     paddingVertical: 5,
     paddingHorizontal: 10,
-    backgroundColor: '#ffd9d6',
+    backgroundColor: "#ffd9d6",
     borderRadius: 5,
-    borderColor: '#000',
+    borderColor: "#000",
     borderWidth: 0.5,
   },
   navButtonFocused: {
     paddingVertical: 5,
     paddingHorizontal: 10,
-    backgroundColor: 'red',
+    backgroundColor: "red",
     borderRadius: 5,
   },
 });

@@ -1,6 +1,6 @@
-import React from 'react';
-import {Image} from 'react-native';
-import CreatePageComponent from '../../components/createContent/CreatePageComponent';
+import React from "react";
+import {Image} from "react-native";
+import CreatePageComponent from "../../components/createContent/CreatePageComponent";
 
 const Preview = ({style, fileSource}) => {
   return (
@@ -9,7 +9,7 @@ const Preview = ({style, fileSource}) => {
       source={
         fileSource
           ? {uri: fileSource.uri}
-          : require('../../assets/images/createContent/icon_pictures.png')
+          : require("../../assets/images/createContent/icon_pictures.png")
       }
     />
   );

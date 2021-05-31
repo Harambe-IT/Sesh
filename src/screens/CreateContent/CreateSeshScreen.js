@@ -1,12 +1,8 @@
-import React from 'react';
-import {View, Text} from 'react-native';
+import React from "react";
+import NotImplemented from "../../components/Common/NotImplemented";
 
 const CreateSeshScreen = () => {
-  return (
-    <View>
-      <Text>Create Sesh Screen</Text>
-    </View>
-  );
+  return <NotImplemented />;
 };
 
 export default CreateSeshScreen;

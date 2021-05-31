@@ -1,7 +1,7 @@
-import React from 'react';
-import Video from 'react-native-video';
+import React from "react";
+import Video from "react-native-video";
 
-import PostComponent from './PostComponent';
+import PostComponent from "./PostComponent";
 
 const Display = ({style, source}) => {
   let player;

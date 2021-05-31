@@ -1,16 +1,16 @@
-import React from 'react';
-import {Image, StyleSheet, TouchableOpacity} from 'react-native';
+import React from "react";
+import {Image, StyleSheet, TouchableOpacity} from "react-native";
 
 const BackArrow = ({navigation, to, style, extraOnClickHandler}) => {
   const handleClick = () => {
     navigation.navigate(to);
-    extraOnClickHandler();
+    extraOnClickHandler && extraOnClickHandler();
   };
 
   return (
     <TouchableOpacity onPress={handleClick} style={style}>
       <Image
-        source={require('../../assets/images/navigation/icon_backArrow.png')}
+        source={require("../../assets/images/navigation/icon_backArrow.png")}
         style={styles.backArrow}
       />
     </TouchableOpacity>

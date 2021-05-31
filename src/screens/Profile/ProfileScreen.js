@@ -1,27 +1,48 @@
-import React, {useEffect, useState} from 'react';
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
+import {useNavigation, useRoute} from "@react-navigation/native";
+import React, {useEffect, useMemo} from "react";
 import {
-  View,
-  ScrollView,
-  Text,
-  StyleSheet,
   Image,
+  ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
-} from 'react-native';
-import {useSelector, useDispatch} from 'react-redux';
-import auth from '@react-native-firebase/auth';
+  View,
+} from "react-native";
+import {useDispatch, useSelector} from "react-redux";
+import PostPreviewComponent from "../../components/Profile/PostPreviewComponent";
+import {updateFollowing} from "../../features/authentication/authenticationSlice";
+import {getPostsByUser, getSpotsByUser} from "../../features/posts/postSlice";
+import {
+  getUserProfile,
+  toggleFollow,
+} from "../../features/profile/profileSlice";
 
-import {getUserProfile} from '../../features/profile/profileSlice';
-import {getPostsByUser, getSpotsByUser} from '../../features/posts/postSlice';
-import PostPreviewComponent from '../../components/Profile/PostPreviewComponent';
-
-const ProfileScreen = ({route}) => {
+const ProfileScreen = () => {
   const dispatch = useDispatch();
-  const {uid} = route.params;
+  const route = useRoute();
+  const navigation = useNavigation();
+  const uid = route.params?.uid || auth().currentUser.uid;
   const {user} = useSelector((state) => state.profile);
+  const authState = useSelector((state) => state.auth);
   const {postsByUser, spotsByUser} = useSelector((state) => state.posts);
+  const isFollowing = useMemo(() => {
+    return (
+      authState.user.following.filter((follow) => follow.followedId === uid)
+        .length >= 1
+    );
+  }, [authState]);
 
   const handleFollow = () => {
-    console.log('trying to follow');
+    const followedById = auth().currentUser.uid;
+    const followedId = uid;
+
+    dispatch(toggleFollow({followedById, followedId}));
+  };
+
+  const handleNavigateToDetails = (docId) => {
+    navigation.navigate("Post Details", {postId: docId});
   };
 
   useEffect(() => {
@@ -32,50 +53,70 @@ const ProfileScreen = ({route}) => {
     }
   }, [uid]);
 
+  useEffect(() => {
+    const followingSubscriber = firestore()
+      .collection("followers")
+      .onSnapshot((snapshot) => {
+        let validDocs = snapshot.docs.filter(
+          (doc) => doc.data().followedById === auth().currentUser.uid,
+        );
+        let following = [];
+        validDocs.forEach((doc) => {
+          following.push({
+            docId: doc.id,
+            ...doc.data(),
+          });
+        });
+
+        dispatch(updateFollowing(following));
+      });
+
+    return followingSubscriber;
+  }, [dispatch]);
+
   return (
     <View style={styles.container}>
       {user && postsByUser && spotsByUser ? (
         <>
-          <View style={styles.row}>
-            <View style={styles.column}>
+          <View style={[styles.row, styles.userInfoContainer]}>
+            <View>
+              <Text style={styles.userName}>{user.username}</Text>
               <Image
-                source={{uri: 'https://picsum.photos/300/300'}}
+                source={{uri: "https://picsum.photos/300/300"}}
                 style={styles.profilePicture}
               />
-              {uid !== auth().currentUser.uid && (
-                <TouchableOpacity
-                  style={[styles.followButton, {backgroundColor: 'red'}]}
-                  onPress={handleFollow}>
-                  <Text style={styles.followText}>Follow</Text>
-                </TouchableOpacity>
-              )}
             </View>
-            <View style={styles.column}>
-              <Text style={styles.userName}>{user.username}</Text>
+            <View style={styles.userInfoTextContainer}>
+              <Text style={styles.userInfoText}>{`${spotsByUser.length} ${
+                spotsByUser.length == 1 ? "Spot" : "Spots"
+              }`}</Text>
+              <Text style={styles.userInfoText}>{`${postsByUser.length} ${
+                postsByUser.length == 1 ? "Post" : "Posts"
+              }`}</Text>
             </View>
+            {uid !== auth().currentUser.uid && (
+              <TouchableOpacity
+                onPress={handleFollow}
+                style={
+                  isFollowing ? styles.unfollowButton : styles.followButton
+                }>
+                <Text style={styles.followButtonText}>
+                  {isFollowing ? "Unfollow" : "Follow"}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
-          <View style={styles.row}>
-            <View style={styles.column}>
-              <Text>{`${spotsByUser.length}`}</Text>
-              <Text>{'Spots'}</Text>
-            </View>
-            <View style={styles.column}>
-              <Text>{`${postsByUser.length}`}</Text>
-              <Text>{'Posts'}</Text>
-            </View>
-          </View>
-          <ScrollView
-            style={styles.postsContainer}
-            contentContainerStyle={{
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-            }}>
+          <ScrollView style={styles.postContainer}>
             {postsByUser.map((post) => {
               return (
-                <PostPreviewComponent
+                <TouchableOpacity
                   key={post.docId}
-                  source={{uri: post.contentUrl}}
-                />
+                  onPress={() => handleNavigateToDetails(post.docId)}>
+                  <PostPreviewComponent
+                    type={post.type}
+                    source={{uri: post.contentUrl}}
+                  />
+                </TouchableOpacity>
               );
             })}
           </ScrollView>
@@ -92,41 +133,67 @@ export default ProfileScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  profilePicture: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  row: {
-    flexDirection: 'row',
-    paddingBottom: 25,
-  },
-  column: {
-    flex: 1,
+    padding: "2%",
   },
   userName: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: "",
+    fontSize: 25,
+    fontWeight: "bold",
+    marginBottom: "2%",
   },
-  postsContainer: {
-    flex: 1,
-    backgroundColor: 'white',
-    padding: 10,
-    borderRadius: 25,
+  profilePicture: {
+    width: "60%",
+    aspectRatio: 1,
+    borderRadius: 75,
+  },
+  row: {
+    flexDirection: "row",
+  },
+  userInfoContainer: {
+    backgroundColor: "#fafafa",
+    padding: "2%",
+    marginBottom: "2%",
+    borderRadius: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  userInfoTextContainer: {
+    justifyContent: "space-evenly",
+    alignItems: "flex-end",
+    marginLeft: "auto",
+  },
+  userInfoText: {
+    fontFamily: "",
+    fontSize: 15,
+    fontWeight: "bold",
   },
   followButton: {
-    width: 100,
-    paddingVertical: 5,
-    borderRadius: 20,
-    marginTop: -20,
+    backgroundColor: "red",
+    width: "36%",
+    borderRadius: 10,
+    paddingVertical: "2%",
+    paddingHorizontal: "4%",
+    position: "absolute",
+    bottom: "3%",
+    left: "2%",
   },
-  followText: {
-    textAlign: 'center',
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 15,
+  unfollowButton: {
+    backgroundColor: "grey",
+    width: "36%",
+    borderRadius: 10,
+    paddingVertical: "2%",
+    paddingHorizontal: "4%",
+    position: "absolute",
+    bottom: "3%",
+    left: "2%",
+  },
+  followButtonText: {
+    fontFamily: "",
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  postContainer: {
+    borderRadius: 10,
+    padding: "1%",
   },
 });
