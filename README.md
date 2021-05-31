@@ -39,7 +39,7 @@ Follow the steps on this page for this: [React Native Develop Environement](http
 Select `React Native CLI Quickstart`, after that make sure to select `Windows` and `Android`.
 
 For a physical device you'll need to enable usb-debugging on your phone (developer settings -> USB Debugging).  
-After that you can get a program to emulate your screen on your pc.  
+After that you can get a program to emulate your screen on your pc (NOT NEEDED; the app will also build on your phone).  
 [Tutorial to mirror screen to your pc](https://www.phonearena.com/news/How-to-mirror-your-Android-phone-to-PC-for-free-with-full-keyboard-and-mouse-support_id124118)
 If you've mirrored your phone's screen you should also be able to connect with a react app.
 
