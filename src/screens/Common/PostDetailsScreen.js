@@ -74,6 +74,9 @@ const PostDetailsScreen = () => {
     <View>
       {postById && (
         <View style={styles.container}>
+          <View style={styles.postTitleContainer}>
+            <Text style={styles.postTitle}>{postById.title}</Text>
+          </View>
           {postById.type === "picture" ? (
             <Picture key={postById.docId} post={postById} page="Details" />
           ) : (
@@ -135,5 +138,18 @@ const styles = StyleSheet.create({
     padding: "2%",
     marginBottom: "11%",
     borderWidth: StyleSheet.hairlineWidth,
+  },
+  postTitleContainer: {
+    marginBottom: 10,
+    paddingVertical: 5,
+    borderWidth: StyleSheet.hairlineWidth,
+    width: "100%",
+    backgroundColor: "#fafafa",
+  },
+  postTitle: {
+    fontFamily: "",
+    fontWeight: "bold",
+    fontSize: 25,
+    textAlign: "center",
   },
 });

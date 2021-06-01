@@ -102,6 +102,7 @@ const DiscoverScreen = () => {
       ) : (
         <ListComponent
           postsByLocation={postsByLocation}
+          spotsByLocation={spotsByLocation}
           isFetching={isFetching}
           handleGetNewPosts={handleGetNewPosts}
         />

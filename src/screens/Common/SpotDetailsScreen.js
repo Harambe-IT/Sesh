@@ -74,6 +74,10 @@ const SpotDetailsScreen = () => {
     <View>
       {spotById && (
         <View style={styles.container}>
+          <View style={styles.spotTitleContainer}>
+            <Text style={styles.spotTitle}>{spotById.title}</Text>
+            <Text style={styles.spotDescription}>{spotById.description}</Text>
+          </View>
           <Picture key={spotById.docId} post={spotById} page="Details" />
           <ScrollView style={styles.commentsBox}>
             {spotById.reactions?.length > 0 ? (
@@ -131,5 +135,23 @@ const styles = StyleSheet.create({
     padding: "2%",
     marginBottom: "11%",
     borderWidth: StyleSheet.hairlineWidth,
+  },
+  spotTitleContainer: {
+    marginBottom: 10,
+    paddingVertical: 5,
+    borderWidth: StyleSheet.hairlineWidth,
+    width: "100%",
+    backgroundColor: "#fafafa",
+  },
+  spotTitle: {
+    fontFamily: "",
+    fontWeight: "bold",
+    fontSize: 25,
+    textAlign: "center",
+  },
+  spotDescription: {
+    fontFamily: "",
+    fontSize: 15,
+    textAlign: "center",
   },
 });
