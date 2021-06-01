@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Text, View, StyleSheet} from "react-native";
+import {Text, View, StyleSheet, Image} from "react-native";
 import MapView, {PROVIDER_GOOGLE, Marker, Callout} from "react-native-maps";
 import {useNavigation} from "@react-navigation/native";
 
@@ -39,14 +39,14 @@ const MapComponent = ({
           return (
             <Marker
               key={docId}
-              image={pinIcon}
+              icon={pinIcon}
               coordinate={{
                 latitude: location.latitude,
                 longitude: location.longitude,
               }}>
               <Callout
-                tooltip
-                onPress={() => handleNavigateToDetails(type, docId)}>
+                onPress={() => handleNavigateToDetails(type, docId)}
+                tooltip>
                 <View>
                   <View style={styles.markerContainer}>
                     <Text style={styles.markerTitle}>{title}</Text>
