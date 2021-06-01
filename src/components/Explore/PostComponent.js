@@ -4,7 +4,7 @@ import auth from "@react-native-firebase/auth";
 import {useSelector, useDispatch} from "react-redux";
 import {useNavigation} from "@react-navigation/native";
 
-import {likePost} from "../../features/posts/postSlice";
+import {likePost, likeSpot} from "../../features/posts/postSlice";
 
 const PostComponent = ({post, display, page}) => {
   const Display = display;
@@ -32,20 +32,24 @@ const PostComponent = ({post, display, page}) => {
     );
   }, [likes]);
 
-  const handleLike = () => {
-    dispatch(likePost({postId: post.docId, page}));
+  const handleLike = (type) => {
+    if (type === "spot") {
+      dispatch(likeSpot({spotId: post.docId}));
+    } else {
+      dispatch(likePost({postId: post.docId, page}));
+    }
   };
 
-  const handleReaction = () => {
-    navigation.navigate("Post Details", {postId: post.docId});
+  const handleGoToDetailsPage = (type) => {
+    if (type === "spot") {
+      navigation.navigate("Spot Details", {spotId: post.docId});
+    } else {
+      navigation.navigate("Post Details", {postId: post.docId});
+    }
   };
 
   const handleGoToProfile = () => {
     navigation.navigate("Profile", {uid: owner.uid});
-  };
-
-  const handleGoToDetailsPage = () => {
-    navigation.navigate("Post Details", {postId: post.docId});
   };
 
   return (
@@ -68,12 +72,14 @@ const PostComponent = ({post, display, page}) => {
         <Text style={styles.textRight}>{type}</Text>
       </View>
 
-      <TouchableOpacity onPress={handleGoToDetailsPage}>
+      <TouchableOpacity onPress={() => handleGoToDetailsPage(type)}>
         <Display style={styles.postContent} source={{uri: contentUrl}} />
       </TouchableOpacity>
 
       <View style={styles.postInfoContainer}>
-        <TouchableOpacity onPress={handleLike} style={styles.postInfoContainer}>
+        <TouchableOpacity
+          onPress={() => handleLike(type)}
+          style={styles.postInfoContainer}>
           <Image
             style={styles.tinyIcon}
             source={
@@ -85,7 +91,7 @@ const PostComponent = ({post, display, page}) => {
           <Text style={styles.numberOfLR}>{likes.length}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={handleReaction}
+          onPress={() => handleGoToDetailsPage(type)}
           style={styles.postInfoContainer}>
           <Image
             style={styles.tinyIcon}

@@ -10,8 +10,8 @@ import {
 
 const windowHeight = Dimensions.get("window").height;
 
-export default LoadingScreen = () => {
-  return (
+export default LoadingScreen = (backgroundImage) => {
+  return backgroundImage ? (
     <ImageBackground
       source={require("../../assets/images/image_InBb.png")}
       style={{minHeight: windowHeight}}>
@@ -21,6 +21,14 @@ export default LoadingScreen = () => {
         </View>
       </KeyboardAvoidingView>
     </ImageBackground>
+  ) : (
+    <View style={{minHeight: windowHeight}}>
+      <KeyboardAvoidingView style={[styles.container, {flex: 1}]}>
+        <View style={styles.catchPhraseContainer}>
+          <Text style={styles.catchPhrase}>Loading...</Text>
+        </View>
+      </KeyboardAvoidingView>
+    </View>
   );
 };
 

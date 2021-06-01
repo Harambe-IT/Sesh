@@ -2,7 +2,9 @@ import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import {useNavigation, useRoute} from "@react-navigation/native";
 import React, {useEffect, useMemo} from "react";
+import {useState} from "react";
 import {
+  Button,
   Image,
   ScrollView,
   StyleSheet,
@@ -18,6 +20,7 @@ import {
   getUserProfile,
   toggleFollow,
 } from "../../features/profile/profileSlice";
+import LoadingScreen from "../Common/LoadingScreen";
 
 const ProfileScreen = () => {
   const dispatch = useDispatch();
@@ -27,6 +30,7 @@ const ProfileScreen = () => {
   const {user} = useSelector((state) => state.profile);
   const authState = useSelector((state) => state.auth);
   const {postsByUser, spotsByUser} = useSelector((state) => state.posts);
+  const [postPage, setPostPage] = useState(true);
   const isFollowing = useMemo(() => {
     return (
       authState.user.following.filter((follow) => follow.followedId === uid)
@@ -43,6 +47,10 @@ const ProfileScreen = () => {
 
   const handleNavigateToDetails = (docId) => {
     navigation.navigate("Post Details", {postId: docId});
+  };
+
+  const handleNavigateToDetailsSpot = (spotId) => {
+    navigation.navigate("Spot Details", {spotId});
   };
 
   useEffect(() => {
@@ -93,6 +101,13 @@ const ProfileScreen = () => {
               <Text style={styles.userInfoText}>{`${postsByUser.length} ${
                 postsByUser.length == 1 ? "Post" : "Posts"
               }`}</Text>
+              <Text style={styles.userInfoText}>{`${
+                user.followedBy?.length == 1 ? "Follower" : "Followers"
+              } ${user.followedBy?.length}`}</Text>
+              <Text
+                style={
+                  styles.userInfoText
+                }>{`Following ${user.following?.length}`}</Text>
             </View>
             {uid !== auth().currentUser.uid && (
               <TouchableOpacity
@@ -106,23 +121,64 @@ const ProfileScreen = () => {
               </TouchableOpacity>
             )}
           </View>
+          <View style={styles.navButtonContainer}>
+            <TouchableOpacity
+              onPress={() => setPostPage(true)}
+              style={[styles.navButton(postPage), styles.navButtonLeft]}>
+              <Text style={styles.navButtonText(postPage)}>Posts</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setPostPage(false)}
+              style={[styles.navButton(!postPage), styles.navButtonRight]}>
+              <Text style={styles.navButtonText(!postPage)}>Spots</Text>
+            </TouchableOpacity>
+          </View>
           <ScrollView style={styles.postContainer}>
-            {postsByUser.map((post) => {
-              return (
-                <TouchableOpacity
-                  key={post.docId}
-                  onPress={() => handleNavigateToDetails(post.docId)}>
-                  <PostPreviewComponent
-                    type={post.type}
-                    source={{uri: post.contentUrl}}
-                  />
-                </TouchableOpacity>
-              );
-            })}
+            {postPage ? (
+              postsByUser.length > 0 ? (
+                postsByUser.map((post) => {
+                  return (
+                    <TouchableOpacity
+                      key={post.docId}
+                      onPress={() => handleNavigateToDetails(post.docId)}>
+                      <PostPreviewComponent
+                        type={post.type}
+                        source={{uri: post.contentUrl}}
+                      />
+                    </TouchableOpacity>
+                  );
+                })
+              ) : (
+                <View style={{justifyContent: "center", alignItems: "center"}}>
+                  <Text style={{marginTop: "50%"}}>
+                    This user has no spots yet.
+                  </Text>
+                </View>
+              )
+            ) : spotsByUser.length > 0 ? (
+              spotsByUser.map((spot) => {
+                return (
+                  <TouchableOpacity
+                    key={spot.docId}
+                    onPress={() => handleNavigateToDetailsSpot(spot.docId)}>
+                    <PostPreviewComponent
+                      type={spot.type}
+                      source={{uri: spot.contentUrl}}
+                    />
+                  </TouchableOpacity>
+                );
+              })
+            ) : (
+              <View style={{justifyContent: "center", alignItems: "center"}}>
+                <Text style={{marginTop: "50%"}}>
+                  This user has no spots yet.
+                </Text>
+              </View>
+            )}
           </ScrollView>
         </>
       ) : (
-        <Text>Loading...</Text>
+        <LoadingScreen />
       )}
     </View>
   );
@@ -135,6 +191,29 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: "2%",
   },
+  navButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  navButton: (active) => ({
+    flex: 1,
+    backgroundColor: active ? "red" : "#e00000",
+    borderWidth: StyleSheet.hairlineWidth,
+  }),
+  navButtonLeft: {
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+  },
+  navButtonRight: {
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  navButtonText: (active) => ({
+    textAlign: "center",
+    color: active ? "white" : "lightgrey",
+    fontSize: 20,
+    fontWeight: "bold",
+  }),
   userName: {
     fontFamily: "",
     fontSize: 25,

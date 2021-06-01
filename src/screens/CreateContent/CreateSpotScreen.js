@@ -11,7 +11,6 @@ import Button from "../../components/Common/Button";
 import BackArrow from "../../components/navigation/BackArrow";
 
 const CreateSpotScreen = ({navigation}) => {
-  const history = useHistory();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [fileSource, setFileSource] = useState(null);
@@ -67,7 +66,7 @@ const CreateSpotScreen = ({navigation}) => {
         setInitialPosition(region);
       },
       (error) => console.log(error.message),
-      {enableHighAccuracy: true, timeout: 10000},
+      {enableHighAccuracy: true},
     );
   };
 
@@ -86,8 +85,8 @@ const CreateSpotScreen = ({navigation}) => {
       }
     };
 
-    requestLocationPermission();
-  }, []);
+    if (!initialPosition) requestLocationPermission();
+  }, [initialPosition]);
 
   useEffect(() => {
     setTitle("");
@@ -150,9 +149,9 @@ const CreateSpotScreen = ({navigation}) => {
         </View>
         <Button
           onPress={handleUpload}
-          disabled={isUploading || isFetching}
+          disabled={isUploading}
           text="Post"
-          style={styles.uploadButton}
+          style={styles.uploadButton(isUploading)}
         />
       </View>
     );
@@ -183,14 +182,14 @@ const styles = StyleSheet.create({
   previewClickableContainer: {
     height: "50%",
   },
-  uploadButton: {
+  uploadButton: (disabled) => ({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 25,
     position: "absolute",
     top: "90%",
-    left: "80%",
-  },
+    left: disabled ? "70%" : "80%",
+  }),
   mapContainer: {
     flex: 1,
   },

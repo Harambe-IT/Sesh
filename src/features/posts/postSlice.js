@@ -96,6 +96,7 @@ export const createNewSpot = createAsyncThunk(
             owner: firestore().collection("users").doc(uid),
             title: spot.title.trim(),
             type: "spot",
+            description: spot.description.trim(),
             location: {...spot.region},
           });
       })
@@ -508,6 +509,51 @@ export const getPostById = createAsyncThunk(
   },
 );
 
+export const getSpotById = createAsyncThunk(
+  "posts/getSpotById",
+  async (docId, {rejectWithValue}) => {
+    return firestore()
+      .collection("spots")
+      .doc(docId)
+      .get()
+      .then(async (doc) => {
+        let tempSpot = {
+          docId: doc.id,
+          ...doc.data(),
+          createdOn: doc.data().createdOn.seconds,
+        };
+
+        let getOwnerData = doc
+          .data()
+          .owner.get()
+          .then((doc) => {
+            tempSpot.owner = {
+              uid: doc.id,
+              ...doc.data(),
+              createdOn: doc.data().createdOn.seconds,
+            };
+          });
+
+        let getLikes = getLikesFrom("spots", tempSpot.docId).then((likes) => {
+          tempSpot.likes = likes;
+        });
+
+        let getReactions = getReactionsFrom("spots", tempSpot.docId).then(
+          (reactions) => {
+            tempSpot.reactions = reactions;
+          },
+        );
+
+        return Promise.all([getOwnerData, getLikes, getReactions]).then(() => {
+          return tempSpot;
+        });
+      })
+      .catch((err) => {
+        return rejectWithValue(err.message);
+      });
+  },
+);
+
 const getLikesFrom = async (collection, document) => {
   return firestore()
     .collection(collection)
@@ -639,6 +685,48 @@ export const likePost = createAsyncThunk(
   },
 );
 
+export const likeSpot = createAsyncThunk(
+  "posts/likeSpot",
+  async ({spotId}, {rejectWithValue}) => {
+    let uid = auth().currentUser.uid;
+    let userReference = firestore().collection("users").doc(uid);
+    let spotLikesReference = firestore()
+      .collection("spots")
+      .doc(spotId)
+      .collection("likes");
+
+    return spotLikesReference
+      .where("owner", "==", userReference)
+      .get()
+      .then(async (snapshot) => {
+        if (snapshot.empty) {
+          return spotLikesReference.add({owner: userReference}).then(() => {
+            return userReference
+              .get()
+              .then((doc) => {
+                return {
+                  uid: doc.id,
+                  ...doc.data(),
+                  createdOn: doc.data().createdOn.seconds,
+                };
+              })
+              .then((owner) => {
+                return {liked: true, owner};
+              });
+          });
+        } else {
+          return spotLikesReference
+            .doc(snapshot.docs[0].id)
+            .delete()
+            .then(() => {
+              return {liked: false, uid};
+            });
+        }
+      })
+      .catch((err) => rejectWithValue(err));
+  },
+);
+
 export const reactPost = createAsyncThunk(
   "posts/react",
   async ({postId, reaction}, {rejectWithValue}) => {
@@ -662,6 +750,29 @@ export const reactPost = createAsyncThunk(
   },
 );
 
+export const reactSpot = createAsyncThunk(
+  "posts/reactSpot",
+  async ({spotId, reaction}, {rejectWithValue}) => {
+    if (reaction.trim() === "") rejectWithValue("No content");
+
+    let uid = auth().currentUser.uid;
+    let userReference = firestore().collection("users").doc(uid);
+    let spotReactionReference = firestore()
+      .collection("spots")
+      .doc(spotId)
+      .collection("reactions");
+
+    return spotReactionReference
+      .add({
+        owner: userReference,
+        text: reaction,
+        createdOn: firestore.FieldValue.serverTimestamp(),
+      })
+      .then(() => true)
+      .catch((err) => rejectWithValue(err));
+  },
+);
+
 const initialState = {
   isFetching: false,
   isUploading: false,
@@ -673,6 +784,7 @@ const initialState = {
   spotsByLocation: null,
   postsByUser: null,
   postById: null,
+  spotById: null,
   spotsByUser: null,
 };
 
@@ -687,6 +799,10 @@ const postSlice = createSlice({
     updateComments: (state, action) => {
       if (state.postById)
         state.postById = {...state.postById, reactions: action.payload};
+    },
+    updateCommentsSpot: (state, action) => {
+      if (state.spotById)
+        state.spotById = {...state.spotById, reactions: action.payload};
     },
   },
   extraReducers: {
@@ -743,6 +859,18 @@ const postSlice = createSlice({
       state.postById = action.payload;
     },
     [getPostById.rejected]: (state, action) => {
+      state.isFetching = false;
+      state.errors = action.payload;
+    },
+    [getSpotById.pending]: (state, action) => {
+      state.isFetching = true;
+      state.errors = null;
+    },
+    [getSpotById.fulfilled]: (state, action) => {
+      state.isFetching = false;
+      state.spotById = action.payload;
+    },
+    [getSpotById.rejected]: (state, action) => {
       state.isFetching = false;
       state.errors = action.payload;
     },
@@ -863,6 +991,32 @@ const postSlice = createSlice({
       state.isFetching = false;
       state.errors = null;
     },
+    [likeSpot.pending]: (state, action) => {
+      state.isFetching = true;
+      state.errors = null;
+    },
+    [likeSpot.fulfilled]: (state, action) => {
+      state.isFetching = false;
+
+      const {liked} = action.payload;
+      let tempSpotElement = {...state.spotById};
+
+      if (liked) {
+        const {owner} = action.payload;
+        tempSpotElement.likes.push({owner});
+        state.spotById = tempSpotElement;
+      } else {
+        const {uid} = action.payload;
+        tempSpotElement.likes = tempSpotElement.likes.filter(
+          (like) => like.owner.uid !== uid,
+        );
+        state.spotById = tempSpotElement;
+      }
+    },
+    [likeSpot.rejected]: (state, action) => {
+      state.isFetching = false;
+      state.errors = null;
+    },
     [reactPost.pending]: (state, action) => {
       state.isFetching = true;
       state.errors = null;
@@ -878,5 +1032,10 @@ const postSlice = createSlice({
   },
 });
 
-export const {resetCreateErrors, reset, updateComments} = postSlice.actions;
+export const {
+  resetCreateErrors,
+  reset,
+  updateComments,
+  updateCommentsSpot,
+} = postSlice.actions;
 export default postSlice.reducer;

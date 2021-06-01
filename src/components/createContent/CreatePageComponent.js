@@ -62,7 +62,7 @@ const CreatePageComponent = ({contentFileType, preview}) => {
         setInitialPosition(region);
       },
       (error) => console.log(error.message),
-      {enableHighAccuracy: true, timeout: 10000},
+      {enableHighAccuracy: true},
     );
   };
 

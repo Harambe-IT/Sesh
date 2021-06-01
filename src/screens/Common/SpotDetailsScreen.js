@@ -3,38 +3,38 @@ import {RefreshControl, ScrollView, StyleSheet, Text, View} from "react-native";
 import {useDispatch, useSelector} from "react-redux";
 import {Picture, Video} from "../../components/Explore";
 import {
-  reactPost,
-  getPostById,
-  updateComments,
+  reactSpot,
+  getSpotById,
+  updateCommentsSpot,
 } from "../../features/posts/postSlice";
 import {useRoute} from "@react-navigation/native";
 import {Button, TextBox} from "../../components/Common";
 import Comment from "../../components/Common/Comment";
 import firestore from "@react-native-firebase/firestore";
 
-const PostDetailsScreen = () => {
+const SpotDetailsScreen = () => {
   const dispatch = useDispatch();
   const [comment, setComment] = useState("");
   const route = useRoute();
-  const {postById, isFetching, errors} = useSelector((state) => state.posts);
+  const {spotById, isFetching, errors} = useSelector((state) => state.posts);
 
   const handleSend = () => {
-    dispatch(reactPost({postId: postById.docId, reaction: comment}));
+    dispatch(reactSpot({spotId: spotById.docId, reaction: comment}));
     setComment("");
   };
 
   useEffect(() => {
-    dispatch(getPostById(route.params.postId));
-  }, [route.params.postId]);
+    dispatch(getSpotById(route.params.spotId));
+  }, [route.params.spotId]);
 
   useEffect(() => {
     const unsubscribe = firestore()
-      .collection("posts")
-      .doc(route.params.postId)
+      .collection("spots")
+      .doc(route.params.spotId)
       .collection("reactions")
       .orderBy("createdOn", "desc")
       .onSnapshot((snapshot) => {
-        if (snapshot.empty) dispatch(updateComments([]));
+        if (snapshot.empty) dispatch(updateCommentsSpot([]));
 
         let reactions = [];
         let reactionPromises = [];
@@ -63,7 +63,7 @@ const PostDetailsScreen = () => {
         });
 
         Promise.all(reactionPromises).then(() => {
-          dispatch(updateComments(reactions));
+          dispatch(updateCommentsSpot(reactions));
         });
       });
 
@@ -72,19 +72,16 @@ const PostDetailsScreen = () => {
 
   return (
     <View>
-      {postById && (
+      {spotById && (
         <View style={styles.container}>
-          <View style={styles.postTitleContainer}>
-            <Text style={styles.postTitle}>{postById.title}</Text>
+          <View style={styles.spotTitleContainer}>
+            <Text style={styles.spotTitle}>{spotById.title}</Text>
+            <Text style={styles.spotDescription}>{spotById.description}</Text>
           </View>
-          {postById.type === "picture" ? (
-            <Picture key={postById.docId} post={postById} page="Details" />
-          ) : (
-            <Video key={postById.docId} post={postById} page="Details" />
-          )}
+          <Picture key={spotById.docId} post={spotById} page="Details" />
           <ScrollView style={styles.commentsBox}>
-            {postById.reactions?.length > 0 ? (
-              postById.reactions.map((reaction, index) => {
+            {spotById.reactions?.length > 0 ? (
+              spotById.reactions.map((reaction, index) => {
                 return <Comment key={index} comment={reaction} />;
               })
             ) : (
@@ -105,7 +102,7 @@ const PostDetailsScreen = () => {
   );
 };
 
-export default PostDetailsScreen;
+export default SpotDetailsScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -139,17 +136,22 @@ const styles = StyleSheet.create({
     marginBottom: "11%",
     borderWidth: StyleSheet.hairlineWidth,
   },
-  postTitleContainer: {
+  spotTitleContainer: {
     marginBottom: 10,
     paddingVertical: 5,
     borderWidth: StyleSheet.hairlineWidth,
     width: "100%",
     backgroundColor: "#fafafa",
   },
-  postTitle: {
+  spotTitle: {
     fontFamily: "",
     fontWeight: "bold",
     fontSize: 25,
+    textAlign: "center",
+  },
+  spotDescription: {
+    fontFamily: "",
+    fontSize: 15,
     textAlign: "center",
   },
 });
