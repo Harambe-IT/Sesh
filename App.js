@@ -36,33 +36,37 @@ const App = () => {
     return subscriber;
   }, []);
 
-  return isFetching ? (
-    <LoadingScreen backgroundImage />
-  ) : (
-    <NavigationContainer>
+  return (
+    <>
       <StatusBar hidden />
-      {user !== null ? (
-        <AuthenticatedNavigation />
+      {isFetching ? (
+        <LoadingScreen backgroundImage />
       ) : (
-        <Stack.Navigator
-          screenOptions={{
-            headerShown: false,
-          }}>
-          <Stack.Screen
-            name="Login"
-            children={(props) => <LoginScreen {...props} />}
-          />
-          <Stack.Screen
-            name="Register"
-            children={(props) => <RegisterScreen {...props} />}
-          />
-          <Stack.Screen
-            name="Reset Password"
-            children={(props) => <ResetPasswordScreen {...props} />}
-          />
-        </Stack.Navigator>
+        <NavigationContainer>
+          {user !== null ? (
+            <AuthenticatedNavigation />
+          ) : (
+            <Stack.Navigator
+              screenOptions={{
+                headerShown: false,
+              }}>
+              <Stack.Screen
+                name="Login"
+                children={(props) => <LoginScreen {...props} />}
+              />
+              <Stack.Screen
+                name="Register"
+                children={(props) => <RegisterScreen {...props} />}
+              />
+              <Stack.Screen
+                name="Reset Password"
+                children={(props) => <ResetPasswordScreen {...props} />}
+              />
+            </Stack.Navigator>
+          )}
+        </NavigationContainer>
       )}
-    </NavigationContainer>
+    </>
   );
 };
 

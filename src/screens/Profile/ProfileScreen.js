@@ -151,7 +151,7 @@ const ProfileScreen = () => {
               ) : (
                 <View style={{justifyContent: "center", alignItems: "center"}}>
                   <Text style={{marginTop: "50%"}}>
-                    This user has no spots yet.
+                    This user has no posts yet.
                   </Text>
                 </View>
               )

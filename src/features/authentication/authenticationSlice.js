@@ -27,14 +27,16 @@ export const signInFacebook = createAsyncThunk(
     return LoginManager.logInWithPermissions(["public_profile", "email"])
       .then((result) => {
         if (result.isCancelled) {
-          throw rejectWithValue("User cancled operation.");
+          return rejectWithValue("User cancled operation.");
         }
 
         return AccessToken.getCurrentAccessToken();
       })
       .then((data) => {
         if (!data) {
-          throw new Error("Something went wrong obtaining access token.");
+          return rejectWithValue(
+            "Something went wrong obtaining access token.",
+          );
         }
 
         const facebookCredential = auth.FacebookAuthProvider.credential(
@@ -45,21 +47,20 @@ export const signInFacebook = createAsyncThunk(
       })
       .then(async (userResult) => {
         const {user, additionalUserInfo} = userResult;
-
         if (additionalUserInfo.isNewUser) {
           await firestore()
             .collection("users")
             .doc(user.uid)
             .set({
               createdOn: firestore.FieldValue.serverTimestamp(),
-              initials: `${additionalUserInfo.profile.first_name[0]}${additionalUserInfo.profile.last_name[0]}`.toUpperCase(),
+              username: `${additionalUserInfo.profile.first_name} ${additionalUserInfo.profile.last_name}`,
             });
         }
 
-        return userResult;
+        return true;
       })
       .catch((err) => {
-        rejectWithValue(err.message);
+        return rejectWithValue(err.message);
       });
   },
 );
@@ -73,6 +74,7 @@ export const signInGoogle = createAsyncThunk(
 
     return GoogleSignin.signIn()
       .then((result) => {
+        console.log("here");
         const {idToken} = result;
         return (googleCredential = auth.GoogleAuthProvider.credential(idToken));
       })
@@ -83,6 +85,7 @@ export const signInGoogle = createAsyncThunk(
         console.log(userResult);
       })
       .catch((err) => {
+        console.log(err);
         return rejectWithValue(err.message);
       });
   },
@@ -297,6 +300,24 @@ const authSlice = createSlice({
       else if (action.payload.includes("auth/user-not-found"))
         state.resetPasswordErrors = "No user found with that email address.";
       else state.resetPasswordErrors = action.payload;
+    },
+    [signInFacebook.pending]: (state, action) => {
+      state.isFetching = true;
+      state.loginErrors = null;
+      state.signUpErrors = null;
+    },
+    [signInFacebook.rejected]: (state, action) => {
+      state.isFetching = false;
+      if (
+        action?.payload?.includes(
+          "auth/account-exists-with-different-credential",
+        )
+      ) {
+        state.loginErrors =
+          "An account already exist with that email, try logging in.";
+        state.signUpErrors =
+          "An account already exist with that email, try logging in.";
+      }
     },
   },
 });
